@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "name": {
+      "defaultValue": "linqpad",
+      "type": "string"
+    },
+    "location": {
+      "defaultValue": "northeurope",
+      "type": "string"
+    }
+  },
+  "variables": {
+    "storageAccount-name": "[concat('azfn', parameters('name'), uniqueString(resourceGroup().id))]",
+    "fileShare-name": "[concat('azfn-', parameters('name'), '-files-', uniqueString(resourceGroup().id))]", // the file share is created externally but will use this name
+    "webPlan-name": "[concat('azfn-', parameters('name'), '-web-plan-', uniqueString(resourceGroup().id))]",
+    "webApp-name": "[concat('azfn-', parameters('name'), '-web-app-', uniqueString(resourceGroup().id))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "name": "[variables('storageAccount-name')]",
+      "apiVersion": "2016-01-01",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic",
+        "size": "Y1",
+        "family": "Y",
+        "capacity": 0
+      },
+      "kind": "functionapp",
+      "name": "[variables('webPlan-name')]",
+      "apiVersion": "2015-08-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "numberOfWorkers": 0
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "name": "[variables('webApp-name')]",
+      "apiVersion": "2015-08-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webPlan-name'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('webPlan-name'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "storageAccount-name": {
+      "type": "string",
+      "value": "[variables('storageAccount-name')]"
+    },
+    "fileShare-name": {
+      "type": "string",
+      "value": "[variables('fileShare-name')]"
+    },
+    "webPlan-name": {
+      "type": "string",
+      "value": "[variables('webPlan-name')]"
+    },
+    "webApp-name": {
+      "type": "string",
+      "value": "[variables('webApp-name')]"
+    }
+  }
+}
