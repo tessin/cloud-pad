@@ -27,6 +27,10 @@ Set-AzureRmContext -SubscriptionId <Subscription ID goes here>
 
 The previous step has prepared your working directory with a file `.\AzureFn.PublishSettings` which will be used to supply the credentials when needed, keep it safe.
 
+To publish a LINQPad script as a Azure function, do this:
+
+> `.\New-AzureFnDeployment.ps1 .\HelloWorld.linq`
+
 # Good to know
 
 By default we provision using the dynamic SKU which has a maximum timeout of 5 minutes.
@@ -35,5 +39,5 @@ If you need to run LINQPad scripts for a longer than 5 minutes you need to switc
 
 ## References
 
-https://github.com/Azure/azure-webjobs-sdk-script/issues/18#issuecomment-245636277
-https://github.com/Azure/azure-webjobs-sdk-script/issues/18#issuecomment-246416239
+- https://github.com/Azure/azure-webjobs-sdk-script/issues/18#issuecomment-245636277
+- https://github.com/Azure/azure-webjobs-sdk-script/issues/18#issuecomment-246416239
