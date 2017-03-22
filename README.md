@@ -13,8 +13,7 @@ You have to install the Azure Resource Manager PowerShell cmdlets.
 If this is the first time you use this guide you need to:
 
 1. Create a new resource group (login to the Azure Portal create a new Resource Group) if you don’t want to use an existing...
-2. Download LINQPad version 5 xcopy-deploy from [here](http://www.linqpad.net/download.aspx)
-3. Run the PowerShell script `.\Init-AzureFnDeployment.ps1`
+2. Run the PowerShell script `.\Init-AzureFnDeployment.ps1`
 
 **Note** that you have to be logged in to the Azure Resource Manager for this to work, if you are not it won’t work so run run these two commands first:
 
