@@ -1,6 +1,6 @@
 ﻿
 param(
-    [parameter(Mandatory=$true)]
+    [parameter(Mandatory=$true, Position=0)]
     [string]$LINQPadScript,
     [string]$Schedule, # for example, '0 0 * * * *' every hour, at minute 0
     [string]$PubProfileFileName = '.\AzureFn.PublishSettings'
@@ -29,7 +29,7 @@ if (!(Test-Path -PathType Leaf $funConfigFileName)) {
 # Kudu REST API (common)
 #################################################################
 
-$azfnPubProfile = [xml](cat $PubProfileFileName)
+$xml = [xml](cat $PubProfileFileName)
 
 $username = $xml.publishData.publishProfile[0].userName
 $password = $xml.publishData.publishProfile[0].userPWD
@@ -74,6 +74,19 @@ ConvertTo-Json $funConfig > (Join-Path $funFolder 'function.json')
 
 # *.linq
 cp $LINQPadScript (Join-Path $funFolder $LINQPadScriptFileName)
+
+foreach ($ref in (.\Get-LinqPadScriptReferences.ps1 $LINQPadScript)) {
+    if (Test-Path -PathType Leaf $ref) {
+        cp $ref (Join-Path $funFolder ([System.IO.Path]::GetFileName($ref)))
+        continue
+    }
+    $refRelative = [System.IO.Path]::GetFileName($ref)
+    if (Test-Path -PathType Leaf $refRelative) {
+        cp $refRelative (Join-Path $funFolder ([System.IO.Path]::GetFileName($ref)))
+        continue
+    }
+    Write-Error "LINQPad script includes reference to file '$ref' which is no where to found"
+}
 
 Add-Type -Assembly System.IO.Compression.FileSystem
 

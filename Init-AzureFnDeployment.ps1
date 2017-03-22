@@ -33,7 +33,7 @@ $storageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=$s
 
 $storageContext = New-AzureStorageContext -ConnectionString $storageAccountConnectionString
 
-$storageShare = Get-AzureStorageShare -Name $fileShareName -Context $storageContext
+$storageShare = Get-AzureStorageShare -Name $fileShareName -Context $storageContext -ErrorAction SilentlyContinue
 if (!$storageShare) {
     $storageShare = New-AzureStorageShare -Name $fileShareName -Context $storageContext
 }
@@ -55,22 +55,29 @@ $webAppSettings = @{
 # Download publishing profile for continuous deployment
 #################################################################
 
-Get-AzureRmWebAppPublishingProfile -ResourceGroupName $ResourceGroupName `
+$azfnPubProfile = Get-AzureRmWebAppPublishingProfile `
+    -ResourceGroupName $ResourceGroupName `
     -Name $webAppName `
-    -OutputFile $azfnPubProfileFileName > $azfnPubProfileFileName # -OutputFile does nothing so we have to pipe to disk as well
+    -OutputFile $azfnPubProfileFileName # there's something fishy about this -OutputFile parameter
+
+$azfnPubProfile > $azfnPubProfileFileName # we make sure this is not an issue here
 
 #################################################################
 # Deploy LINQPad
 #################################################################
 
-$azfnPubProfile = [xml](cat $azfnPubProfileFileName)
+if (!(Test-Path -PathType Leaf LINQPad5-AnyCPU.zip)) {
+    Invoke-WebRequest -Uri 'http://www.linqpad.net/GetFile.aspx?LINQPad5.zip' -OutFile LINQPad5-AnyCPU.zip
+}
+
+$xml = [xml](cat $azfnPubProfileFileName)
 
 $username = $xml.publishData.publishProfile[0].userName
 $password = $xml.publishData.publishProfile[0].userPWD
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username,$password)))
 $userAgent = "powershell/1.0"
 
-$apiUrl = "https://$webAppName.scm.azurewebsites.net/api/zip/data"
+$apiUrl = "https://$webAppName.scm.azurewebsites.net/api/zip/data/LINQPad5-AnyCPU"
 
 Invoke-RestMethod -Method PUT `
     -Uri $apiUrl `
