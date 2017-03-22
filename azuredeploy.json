@@ -9,13 +9,51 @@
     "location": {
       "defaultValue": "northeurope",
       "type": "string"
+    },
+    "sku": {
+      "defaultValue": "dynamic",
+      "type": "string",
+      "allowedValues": [
+        "dynamic",
+        "basic"
+      ]
     }
   },
   "variables": {
     "storageAccount-name": "[concat('azfn', parameters('name'), uniqueString(resourceGroup().id))]",
     "fileShare-name": "[concat('azfn-', parameters('name'), '-files-', uniqueString(resourceGroup().id))]", // the file share is created externally but will use this name
     "webPlan-name": "[concat('azfn-', parameters('name'), '-web-plan-', uniqueString(resourceGroup().id))]",
-    "webApp-name": "[concat('azfn-', parameters('name'), '-web-app-', uniqueString(resourceGroup().id))]"
+    "webPlan-sku-dynamic": {
+      "name": "Y1",
+      "tier": "Dynamic",
+      "size": "Y1",
+      "family": "Y",
+      "capacity": 0
+    },
+    "webPlan-sku-basic": {
+      "name": "B1",
+      "tier": "Basic",
+      "size": "B1",
+      "family": "B",
+      "capacity": 1
+    },
+    "webPlan-sku": "[variables(concat('webPlan-sku-', parameters('sku')))]",
+    "webPlan-properties-dynamic": {
+      "numberOfWorkers": 0
+    },
+    "webPlan-properties-basic": {
+      "numberOfWorkers": 1
+    },
+    "webPlan-properties": "[variables(concat('webPlan-properties-', parameters('sku')))]",
+    "webApp-name": "[concat('azfn-', parameters('name'), '-web-app-', uniqueString(resourceGroup().id))]",
+    "webApp-properties-dynamic": {
+      "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webPlan-name'))]",
+    },
+    "webApp-properties-basic": {
+      "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webPlan-name'))]",
+      "alwaysOn": true
+    },
+    "webPlan-properties": "[variables(concat('webApp-properties-', parameters('sku')))]"
   },
   "resources": [
     {
@@ -31,20 +69,12 @@
     },
     {
       "type": "Microsoft.Web/serverfarms",
-      "sku": {
-        "name": "Y1",
-        "tier": "Dynamic",
-        "size": "Y1",
-        "family": "Y",
-        "capacity": 0
-      },
-      "kind": "functionapp",
       "name": "[variables('webPlan-name')]",
+      "sku": "[variables('webPlan-sku')]",
+      "kind": "functionapp",
       "apiVersion": "2015-08-01",
       "location": "[parameters('location')]",
-      "properties": {
-        "numberOfWorkers": 0
-      }
+      "properties": "[variables('webPlan-properties')]"
     },
     {
       "type": "Microsoft.Web/sites",
@@ -52,9 +82,7 @@
       "name": "[variables('webApp-name')]",
       "apiVersion": "2015-08-01",
       "location": "[parameters('location')]",
-      "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('webPlan-name'))]"
-      },
+      "properties": "[variables('webApp-properties')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('webPlan-name'))]"
       ]
@@ -72,6 +100,14 @@
     "webPlan-name": {
       "type": "string",
       "value": "[variables('webPlan-name')]"
+    },
+    "webPlan-sku": {
+      "type": "string",
+      "value": "[variables('webPlan-sku')]"
+    },
+    "webPlan-properties": {
+      "type": "string",
+      "value": "[variables('webPlan-properties')]"
     },
     "webApp-name": {
       "type": "string",

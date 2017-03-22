@@ -3,8 +3,10 @@
 # https://cmatskas.com/deploying-azure-functions-with-arm-templates-and-the-kudu-rest-api/
 
 param(
-  [parameter(Mandatory=$true)]
-  [string]$ResourceGroupName
+    [parameter(Mandatory=$true)]
+    [string]$ResourceGroupName,
+    [ValidateSet('dynamic', 'basic')]
+    [string]$SKU='dynamic'
 )
 
 $azfnPubProfileFileName = '.\AzureFn.PublishSettings'
@@ -16,6 +18,7 @@ if (Test-Path -PathType Leaf $azfnPubProfileFileName) {
 
 $deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
     -TemplateFile .\azuredeploy.json `
+    -TemplateParameterObject @{sku=$SKU;} `
     -Verbose
 
 $storageAccountName = $deployment.Outputs['storageAccount-name'].Value
