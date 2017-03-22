@@ -6,12 +6,13 @@ param(
     [parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
     [ValidateSet('dynamic', 'basic')]
-    [string]$SKU='dynamic'
+    [string]$SKU='dynamic',
+    [switch]$Force
 )
 
 $azfnPubProfileFileName = '.\AzureFn.PublishSettings'
 
-if (Test-Path -PathType Leaf $azfnPubProfileFileName) {
+if ((Test-Path -PathType Leaf $azfnPubProfileFileName) -and !$Force) {
   Write-Error "There's already an '$azfnPubProfileFileName' delete or make sure you are in the right directory? (note: the script will recreate the publishing profile if that's what you want)"
   exit 1
 }
@@ -80,10 +81,16 @@ $password = $xml.publishData.publishProfile[0].userPWD
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username,$password)))
 $userAgent = "powershell/1.0"
 
-$apiUrl = "https://$webAppName.scm.azurewebsites.net/api/zip/data/LINQPad5-AnyCPU"
+$apiUrl = "https://$webAppName.scm.azurewebsites.net/api"
 
 Invoke-RestMethod -Method PUT `
-    -Uri $apiUrl `
+    -Uri "$apiUrl/vfs/data/LINQPad5-AnyCPU/" `
+    -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} `
+    -UserAgent $userAgent `
+    -ErrorAction SilentlyContinue
+
+Invoke-RestMethod -Method PUT `
+    -Uri "$apiUrl/zip/data/LINQPad5-AnyCPU" `
     -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} `
     -UserAgent $userAgent `
     -InFile LINQPad5-AnyCPU.zip
