@@ -32,6 +32,8 @@ To publish a LINQPad script as a Azure function, do this:
 
 `lp2azfn` is a binary that was _installed_ as part of running the `.\Init-AzureFnDeployment.ps1` it also added a shortcut in the `shell:sendto` folder. Which means you can right-click a LINQPad script and now send it to Azure.
 
+The `lp2azfn` is available pre-built from the releases tab, source code is included in this repository.
+
 # Good to know
 
 By default we provision using the dynamic SKU which has a maximum timeout of 5 minutes.
