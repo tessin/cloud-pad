@@ -1,1 +1,8 @@
+.vs
+packages
+
+*.dll
+*.exe
+
 AzureFn.PublishSettings
+

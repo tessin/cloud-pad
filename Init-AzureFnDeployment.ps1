@@ -5,26 +5,39 @@
 param(
     [parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
+    [switch]$ResourceGroupDeployment=$true,
     [ValidateSet('dynamic', 'basic')]
     [string]$SKU='dynamic',
-    [switch]$Force
+    [string]$PublishSettingsFile = '.\AzureFn.PublishSettings',
+    [switch]$Force # allow overwrite of PublishSettingsFile
 )
 
-$azfnPubProfileFileName = '.\AzureFn.PublishSettings'
+function Probe-Path() {
+  param(
+    [parameter(Mandatory=$true, Position=0)]
+    [string]$Path
+  )
+  return Join-Path $PSScriptRoot $Path
+}
 
-if ((Test-Path -PathType Leaf $azfnPubProfileFileName) -and !$Force) {
-  Write-Error "There's already an '$azfnPubProfileFileName' delete or make sure you are in the right directory? (note: the script will recreate the publishing profile if that's what you want)"
+#################################################################
+# Resource group deployment
+#################################################################
+
+if ($ResourceGroupDeployment) { # Begin resource group deployment
+
+if ((Test-Path -PathType Leaf $PublishSettingsFile) -and !$Force) {
+  Write-Error "There's already an '$PublishSettingsFile' delete or make sure you are in the right directory? (note: the script will recreate the publishing profile if that's what you want)"
   exit 1
 }
 
 $deployment = New-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
-    -TemplateFile .\azuredeploy.json `
+    -TemplateFile (Probe-Path .\azuredeploy.json) `
     -TemplateParameterObject @{sku=$SKU;} `
     -Verbose
 
 $storageAccountName = $deployment.Outputs['storageAccount-name'].Value
 $fileShareName = $deployment.Outputs['fileShare-name'].Value
-
 $webAppName = $deployment.Outputs['webApp-name'].Value
 
 #################################################################
@@ -59,38 +72,69 @@ $webAppSettings = @{
 # Download publishing profile for continuous deployment
 #################################################################
 
-$azfnPubProfile = Get-AzureRmWebAppPublishingProfile `
+# there's something off about the -OutputFile parameter
+$PublishSettings = Get-AzureRmWebAppPublishingProfile `
     -ResourceGroupName $ResourceGroupName `
     -Name $webAppName `
-    -OutputFile $azfnPubProfileFileName # there's something fishy about this -OutputFile parameter
+    -OutputFile $PublishSettingsFile
 
-$azfnPubProfile > $azfnPubProfileFileName # we make sure this is not an issue here
+$PublishSettings > $PublishSettingsFile # fix for -OutputFile parameter
+
+} # End resource group deployment
 
 #################################################################
-# Deploy LINQPad
+# Install dependencies
 #################################################################
 
-if (!(Test-Path -PathType Leaf LINQPad5-AnyCPU.zip)) {
-    Invoke-WebRequest -Uri 'http://www.linqpad.net/GetFile.aspx?LINQPad5.zip' -OutFile LINQPad5-AnyCPU.zip
+if (!(Test-Path -PathType Leaf $PublishSettingsFile)) {
+    Write-Error "'$PublishSettingsFile' not found. Redo resource group deployment, if necessary."
+    exit 1
 }
 
-$xml = [xml](cat $azfnPubProfileFileName)
+$dataFolder = Probe-Path data
 
+[void](mkdir $dataFolder -ErrorAction SilentlyContinue)
+
+#################################################################
+# Install LINQPad to Azure runtime
+#################################################################
+
+if (!(Test-Path -PathType Leaf "$dataFolder\LINQPad5-AnyCPU.zip")) {
+    Invoke-WebRequest -Uri 'http://www.linqpad.net/GetFile.aspx?LINQPad5.zip' -OutFile "$dataFolder\LINQPad5-AnyCPU.zip"
+}
+
+$xml = [xml](cat $PublishSettingsFile)
+
+$publishUrl = $xml.publishData.publishProfile[0].publishUrl
 $username = $xml.publishData.publishProfile[0].userName
 $password = $xml.publishData.publishProfile[0].userPWD
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username,$password)))
 $userAgent = "powershell/1.0"
 
-$apiUrl = "https://$webAppName.scm.azurewebsites.net/api"
+$apiUrl = "https://$publishUrl"
 
 Invoke-RestMethod -Method PUT `
-    -Uri "$apiUrl/vfs/data/LINQPad5-AnyCPU/" `
+    -Uri "$apiUrl/api/vfs/data/LINQPad5-AnyCPU/" `
     -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} `
     -UserAgent $userAgent `
     -ErrorAction SilentlyContinue
 
 Invoke-RestMethod -Method PUT `
-    -Uri "$apiUrl/zip/data/LINQPad5-AnyCPU" `
+    -Uri "$apiUrl/api/zip/data/LINQPad5-AnyCPU" `
     -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} `
     -UserAgent $userAgent `
-    -InFile LINQPad5-AnyCPU.zip
+    -InFile "$dataFolder\LINQPad5-AnyCPU.zip"
+
+#################################################################
+# Install tooling (for deployment of LINQPad scripts)
+#################################################################
+
+if (!(Test-Path -PathType Leaf "$dataFolder\tools.zip")) {
+    Invoke-WebRequest -Uri 'https://github.com/tessin/AzureLINQPadFunctions/releases/download/1.0.0/tools.zip' -OutFile "$dataFolder\tools.zip"
+}
+
+Add-Type -Assembly System.IO.Compression.FileSystem
+
+[System.IO.Compression.ZipFile]::ExtractToDirectory("$dataFolder\tools.zip", $PSScriptRoot)
+
+.\lp2azfn --install
