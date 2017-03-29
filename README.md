@@ -28,7 +28,9 @@ The previous step has prepared your working directory with a file `.\AzureFn.Pub
 
 To publish a LINQPad script as a Azure function, do this:
 
-> `.\New-AzureFnDeployment.ps1 .\HelloWorld.linq`
+> `.\lp2azfn .\HelloWorld.linq`
+
+`lp2azfn` is a binary that was _installed_ as part of running the `.\Init-AzureFnDeployment.ps1` it also added a shortcut in the `shell:sendto` folder. Which means you can right-click a LINQPad script and now send it to Azure.
 
 # Good to know
 
