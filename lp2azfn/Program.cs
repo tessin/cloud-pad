@@ -196,7 +196,7 @@ namespace lp2azfn
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"'{lpScriptPath}' contains data that cannot be read by this user. {ex.Message}");
+                    Console.Error.WriteLine($"'{lpScriptPath}' contains data that cannot be read by this user. It's likely that the file has been copied between different users. {ex.Message}");
                     if (Environment.UserInteractive)
                     {
                         Console.ReadLine();
@@ -214,7 +214,7 @@ namespace lp2azfn
                 var extraCxOptions = driverData.Element("ExtraCxOptions");
                 if (extraCxOptions == null)
                 {
-                    conn.Add(extraCxOptions = new XElement("ExtraCxOptions"));
+                    driverData.Add(extraCxOptions = new XElement("ExtraCxOptions"));
                 }
 
                 var cb = new SqlConnectionStringBuilder(extraCxOptions.Value);
@@ -250,6 +250,58 @@ namespace lp2azfn
                     return;
                 }
                 fileSet.Add(abs2);
+            }
+
+            // attachments
+
+            var attachmentsPath = ProbePath($"{lpScriptBaseName}.files.txt", new[] { lpScriptDir, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+            if (attachmentsPath != null)
+            {
+                foreach (var line in File.ReadAllLines(attachmentsPath))
+                {
+                    var line2 = line.Trim();
+                    if (string.IsNullOrEmpty(line2))
+                    {
+                        continue;
+                    }
+                    var attachmentPath = ProbePath(line2, new[] { lpScriptDir, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+                    if (attachmentPath == null)
+                    {
+                        Console.Error.WriteLine($"'{line2}' attachment not found");
+                        if (Environment.UserInteractive)
+                        {
+                            Console.ReadLine();
+                        }
+                        Environment.Exit(1);
+                        return;
+                    }
+                    fileSet.Add(attachmentPath);
+                }
+            }
+
+            var attachmentsPath2 = ProbePath("files.txt", new[] { lpScriptDir, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+            if (attachmentsPath2 != null)
+            {
+                foreach (var line in File.ReadAllLines(attachmentsPath))
+                {
+                    var line2 = line.Trim();
+                    if (string.IsNullOrEmpty(line2))
+                    {
+                        continue;
+                    }
+                    var attachmentPath = ProbePath(line2, new[] { lpScriptDir, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+                    if (attachmentPath == null)
+                    {
+                        Console.Error.WriteLine($"'{line2}' global attachment not found");
+                        if (Environment.UserInteractive)
+                        {
+                            Console.ReadLine();
+                        }
+                        Environment.Exit(1);
+                        return;
+                    }
+                    fileSet.Add(attachmentPath);
+                }
             }
 
             // begin publish

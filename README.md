@@ -22,6 +22,36 @@ Login-AzureRmAccount; `
 Set-AzureRmContext -SubscriptionId <Subscription ID goes here>
 ~~~
 
+## Setting up your first script
+
+An Azure function requires a `function.json` file. If you script is called `LINQPad.linq` the name of this file should be `LINQPad.function.json` and it should reside alongside your `LINQPad.linq` script in the same directory.
+
+Here's what this file should look like:
+
+~~~
+{
+  "bindings": [
+    {
+      "name": "timerTrigger",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 0 * * * *"
+    }
+  ],
+  "disabled": false
+}
+~~~
+
+> **Note:** The `timerTrigger` is currently the only supported trigger.
+
+### Attachments
+
+If you LINQPad script depends on additional files that are not somehow referenced by the LINQPad script itself (like libraries and NuGet packages) you can use an attachments file.
+
+Similar to how the `function.json` file is located, the attachments file should be `LINQPad.files.txt`. Each line in this file is a file which will be included and deployed alongside with the LINQPad script.
+
+You can use either absolute or relative paths in this file. Relative paths will be relative ot the directory containing the LINQPad script.
+
 ## Continuous deployment
 
 The previous step has prepared your working directory with a file `.\AzureFn.PublishSettings` which will be used to supply the credentials when needed, keep it safe.
