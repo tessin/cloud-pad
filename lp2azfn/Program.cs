@@ -236,7 +236,11 @@ namespace lp2azfn
                     fileSet.Add(abs);
                     continue;
                 }
-                var rel = r.Attribute("Relative").Value;
+                var rel = r.Attribute("Relative")?.Value;
+                if (rel == null)
+                {
+                    continue;
+                }
                 var path = Path.GetDirectoryName(r.Value);
                 var abs2 = ProbePath(rel, new[] { path, lpScriptDir, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
                 if (abs2 == null)
