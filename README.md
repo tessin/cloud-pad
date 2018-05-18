@@ -4,7 +4,7 @@ This is a set of PowerShell scripts and conventions to deploy and run LINQPad sc
 
 ## Requirements
 
-You have to install the Azure Resource Manager PowerShell cmdlets.
+You have to install the [Azure Resource Manager PowerShell cmdlets](https://docs.microsoft.com/en-us/powershell/azure/install-azurerm-ps?view=azurermps-6.0.0)
 
 # Getting started
 
