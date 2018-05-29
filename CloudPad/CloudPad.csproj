@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <Version>0.0.1</Version>
+    <PackageId>CloudPad</PackageId>
+    <Authors>Tessin Nordic AB</Authors>
+    <Description>Run LINQPad scripts as Azure funcitons.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="proxy.linq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="proxy.linq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+</Project>
