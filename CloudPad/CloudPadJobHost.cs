@@ -1,11 +1,15 @@
 ﻿using CloudPad.Internal;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -81,30 +85,44 @@ namespace CloudPad
             }
             else
             {
-                var methodNameSet = new HashSet<string>(StringComparer.Ordinal);
-
-                var methods = context.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (var m in methods)
-                {
-                    var binding = Binding.GetBinding(m);
-                    if (binding == null)
-                    {
-                        continue;
-                    }
-
-                    if (methodNameSet.Add(m.Name))
-                    {
-                        RegisterBinding(binding);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"method '{m.Name}' is overloaded, you must give each method a unique name");
-                    }
-                }
+                RegisterBindings(context);
             }
         }
 
-        private void RegisterBinding(Binding binding)
+        private List<Binding> RegisterBindings(object context)
+        {
+            var bindings = new List<Binding>();
+
+            var methodNameSet = new HashSet<string>(StringComparer.Ordinal);
+
+            var methods = context.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (var m in methods)
+            {
+                var binding = Binding.GetBinding(m);
+                if (binding == null)
+                {
+                    continue;
+                }
+
+                if (methodNameSet.Add(m.Name))
+                {
+                    if (!RegisterBinding(binding))
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException($"method '{m.Name}' is overloaded, you must give each method a unique name");
+                }
+
+                bindings.Add(binding);
+            }
+
+            return bindings;
+        }
+
+        private bool RegisterBinding(Binding binding)
         {
             if (binding.Type == BindingType.HttpTrigger)
             {
@@ -118,36 +136,39 @@ namespace CloudPad
                         break;
 
                     default:
-                        //LINQPad.Extensions.Dump($"method {m.Name} does not match HTTP handler signature (rank)");
-                        return;
+                        Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (rank)");
+                        return false;
                 }
 
                 if (!typeof(HttpRequestMessage).IsAssignableFrom(parameters[0].ParameterType))
                 {
-                    //LINQPad.Extensions.Dump($"method {m.Name} does not match HTTP handler signature (parameter #1 type)");
-                    return;
+                    Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (parameter #1 type)");
+                    return false;
                 }
 
                 if (1 < parameters.Length)
                 {
                     if (!typeof(CancellationToken).IsAssignableFrom(parameters[1].ParameterType))
                     {
-                        //LINQPad.Extensions.Dump($"method {m.Name} does not match HTTP handler signature (parameter #2 type)");
-                        return;
+                        Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (parameter #2 type)");
+                        return false;
                     }
                 }
 
                 if (!(typeof(Task<HttpResponseMessage>).IsAssignableFrom(binding.Method.ReturnType) ||
                     typeof(HttpResponseMessage).IsAssignableFrom(binding.Method.ReturnType)))
                 {
-                    //LINQPad.Extensions.Dump($"method {m.Name} does not match HTTP handler signature (return type)");
-                    return;
+                    Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (return type)");
+                    return false;
                 }
 
                 // todo: create delegate
 
-                _httpListener.Configuration.Routes.MapHttpRoute(binding.Route, binding.Route, null, null, new CloudPadReflectionHttpMessageHandler(_context, binding.Method, parameters));
+                _httpListener.Configuration.Routes.MapHttpRoute(binding.Route, "api/" + binding.Route, null, null, new CloudPadReflectionHttpMessageHandler(_context, binding.Method, parameters));
+                return true;
             }
+
+            return false;
         }
 
         public async Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -158,7 +179,11 @@ namespace CloudPad
             }
             else
             {
-                //Debugger.Launch();
+                if (_methodName == "-compile")
+                {
+                    await CompileAsync();
+                    return;
+                }
 
                 var binding = Binding.GetBinding(_context.GetType(), _methodName);
                 if (binding == null)
@@ -216,6 +241,131 @@ namespace CloudPad
             }
 
             await _httpListener.RunAsync(cts.Token);
+        }
+
+        private async Task CompileAsync()
+        {
+            Trace.Listeners.Add(new ConsoleTraceListener());
+
+            var utilType = Type.GetType("LINQPad.Util, LINQPad", false);
+            if (utilType == null)
+            {
+                Log.Trace.Append("cannot find LINQPad Util type");
+                Environment.Exit(1);
+                return;
+            }
+
+            var linqPadScriptFileName = utilType.GetProperty("CurrentQueryPath")?.GetValue(null) as string;
+
+            if (string.IsNullOrEmpty(linqPadScriptFileName))
+            {
+                Log.Trace.Append("cannot find LINQPad script file name");
+                Environment.Exit(1);
+                return;
+            }
+
+            var bindings = RegisterBindings(_context);
+            if (bindings == null)
+            {
+                // error
+                Log.Trace.Append("one or more bindings has errors");
+                Environment.Exit(1);
+                return;
+            }
+
+            var assembly = GetType().Assembly;
+            var assemblyName = assembly.GetName();
+
+            var zipFileName = Path.ChangeExtension(Path.GetFileName(linqPadScriptFileName), "zip");
+
+            using (var fs = File.Create(zipFileName))
+            {
+                var zip = new ZipArchive(fs, ZipArchiveMode.Create);
+
+                zip.CreateEntryFromFile(linqPadScriptFileName, "scripts/" + Path.GetFileName(linqPadScriptFileName));
+
+                foreach (var binding in bindings)
+                {
+                    var functionJson = new JObject();
+
+                    functionJson["generatedBy"] = assemblyName.Name + "-" + assemblyName.Version;
+                    functionJson["bindings"] = JToken.FromObject(new[] { binding });
+                    functionJson["disabled"] = false;
+                    functionJson["scriptFile"] = "../bin/CloudPadFunctionHost.dll";
+
+                    switch (binding.Type)
+                    {
+                        case BindingType.HttpTrigger:
+                            functionJson["entryPoint"] = "CloudPadFunctionHost.HttpFunction.Run";
+                            break;
+
+                        default:
+                            throw new NotSupportedException("trigger binding: " + binding.Type);
+                    }
+
+                    functionJson["linqPadScriptFileName"] = "../scripts/" + Path.GetFileName(linqPadScriptFileName);
+                    functionJson["linqPadScriptMethodName"] = binding.GetMethodName();
+
+                    var entry = zip.CreateEntry(binding.GetMethodName() + "/function.json");
+
+                    using (var entryStream = entry.Open())
+                    {
+                        var textWriter = new StreamWriter(entryStream);
+                        var jsonSerializer = new JsonSerializer
+                        {
+                            Formatting = Formatting.Indented
+                        };
+                        jsonSerializer.Serialize(new JsonTextWriter(textWriter), functionJson);
+                        textWriter.Flush();
+                    }
+                }
+
+                // proxy.linq
+                {
+                    var entry = zip.CreateEntry("bin/proxy.linq");
+
+                    using (var entryStream = entry.Open())
+                    {
+                        assembly.GetManifestResourceStream("CloudPad.proxy.linq").CopyTo(entryStream);
+                    }
+                }
+
+                zip.Dispose();
+            }
+
+            if (0 < _args.Length && _args[0].StartsWith("publish-profile-"))
+            {
+                // ok, nice!
+
+                Trace.WriteLine("publishing...");
+
+                var publishProfileFn = Path.GetFullPath(_args[0]);
+                var publishProfile = JToken.Parse(File.ReadAllText(publishProfileFn));
+                var publishProfile2 = publishProfile["publish-profile"];
+
+                using (var http = new HttpClient())
+                {
+                    http.BaseAddress = new Uri("https://" + publishProfile2["publishUrl"]);
+                    http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+                        "Basic",
+                        Convert.ToBase64String(
+                            Encoding.ASCII.GetBytes(
+                                (string)publishProfile2["userName"] + ":" + (string)publishProfile2["userPWD"]
+                            )
+                        )
+                    );
+
+                    using (var input = File.OpenRead(zipFileName))
+                    {
+                        var req = new HttpRequestMessage(HttpMethod.Put, "api/zip/" + Uri.EscapeDataString(@"D:\home\site\wwwroot") + "/");
+                        req.Content = new StreamContent(input);
+                        using (var res = await http.SendAsync(req))
+                        {
+                            // ok
+                        }
+                    }
+                }
+            }
         }
 
         public void Dispose()

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace CloudPad.Internal
             var response = _response;
             var outstanding = _outstanding;
 
-            DebugLog.Append($"running");
+            Log.Debug.Append($"running");
 
             for (; ; )
             {
@@ -32,7 +33,7 @@ namespace CloudPad.Internal
                     return; // lprun stopped, crashed or otherwise exited
                 }
 
-                DebugLog.Append($"received {nameof(msg.CorrelationId)}={msg.CorrelationId}");
+                Log.Debug.Append($"received {nameof(msg.CorrelationId)}={msg.CorrelationId}");
 
                 if (outstanding.TryRemove(msg.CorrelationId, out var tcs))
                 {
@@ -53,9 +54,27 @@ namespace CloudPad.Internal
 
                     var processStartInfo = new ProcessStartInfo { UseShellExecute = false };
 
-                    processStartInfo.FileName = @"C:\Program Files (x86)\LINQPad5\LPRun.exe";
-                    processStartInfo.Arguments = "-optimize" + " " + "\"" + @"C:\Users\leidegre\Source\tessin\CloudPad\CloudPad\proxy.linq" + "\"" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+                    // if Azure these need to be changed
 
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("REGION_NAME")))
+                    {
+                        processStartInfo.FileName = @"C:\Program Files (x86)\LINQPad5\LPRun.exe";
+                        processStartInfo.Arguments = "-optimize" + " " + "\"" + @"C:\Users\leidegre\Source\tessin\CloudPad\CloudPad\proxy.linq" + "\"" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+                    }
+                    else
+                    {
+                        // todo:
+                        // Environment.GetEnvironmentVariable("CLOUD_PAD_LINQ_PAD_VERSION");
+
+                        var linqPadDirectory = Directory.EnumerateDirectories(@"D:\home\site\tools", "LINQPad.*").LastOrDefault();
+                        if (linqPadDirectory == null)
+                        {
+                            throw new Exception("LINQPad is not installed on host");
+                        }
+
+                        processStartInfo.FileName = Path.Combine(linqPadDirectory, "LPRun.exe");
+                        processStartInfo.Arguments = "-optimize" + " " + "\"" + @"D:\home\site\wwwroot\bin\proxy.linq" + "\"" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+                    }
 #if DEBUG
                     processStartInfo.RedirectStandardOutput = true;
                     processStartInfo.RedirectStandardError = true;
@@ -90,7 +109,7 @@ namespace CloudPad.Internal
                 throw new InvalidOperationException();
             }
 
-            DebugLog.Append($"sending {nameof(envelope.CorrelationId)}={envelope.CorrelationId}");
+            Log.Debug.Append($"sending {nameof(envelope.CorrelationId)}={envelope.CorrelationId}");
 
             _request.Send(envelope);
 
@@ -166,7 +185,7 @@ namespace CloudPad.Internal
         {
             // todo: check for error
 
-            DebugLog.Append(result.Text);
+            Log.Debug.Append(result.Text);
         }
 
         public void Dispose()

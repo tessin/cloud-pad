@@ -14,10 +14,17 @@ namespace CloudPad
 
         public HttpConfiguration Configuration { get; } = new HttpConfiguration();
 
+        private static string GetUriPrefix()
+        {
+            return Environment.GetEnvironmentVariable("CLOUD_PAD_URI_PREFIX", EnvironmentVariableTarget.Process) ?? "http://localhost:8080/";
+        }
+
         public HttpServer()
         {
+            var uriPrefix = GetUriPrefix();
+
             _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add("http://localhost:8080/"); // todo: configuration
+            _httpListener.Prefixes.Add(uriPrefix);
         }
 
         private static async Task<HttpRequestMessage> CreateRequestMessageAsync(HttpListenerRequest req)
@@ -79,6 +86,13 @@ namespace CloudPad
             Configuration.EnsureInitialized();
 
             _httpListener.Start();
+
+            var uriPrefix = new Uri(GetUriPrefix());
+
+            foreach (var route in Configuration.Routes)
+            {
+                Log.Trace.Append(new Uri(uriPrefix, route.RouteTemplate).AbsoluteUri);
+            }
 
             using (cancellationToken.Register(() => _httpListener.Stop()))
             {

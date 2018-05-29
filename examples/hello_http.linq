@@ -1,5 +1,5 @@
 <Query Kind="Program">
-  <Reference Relative="..\CloudPad\bin\Debug\net461\CloudPad.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\CloudPad.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Debug\net461\CloudPad.dll">C:\Users\leidegre\Source\Repos\cloud-pad\CloudPad\bin\Debug\net461\CloudPad.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\Microsoft.Build.Framework.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\Microsoft.Build.Tasks.v4.0.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\Microsoft.Build.Utilities.v4.0.dll</Reference>
@@ -35,7 +35,7 @@ async Task Main(string[] args)
 
 // Define other methods and classes here
 
-[Route("hello")]
+[HttpTrigger(Route = "hello")]
 HttpResponseMessage Hello(HttpRequestMessage req)
 {
 	return req.CreateText("world");

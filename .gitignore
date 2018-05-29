@@ -4,3 +4,6 @@ obj
 
 *.user
 
+publish-profile-*
+
+*.zip
