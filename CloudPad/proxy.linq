@@ -1,5 +1,5 @@
 <Query Kind="Program">
-  <Reference Relative="bin\Debug\net461\CloudPad.dll">C:\Users\leidegre\Source\tessin\CloudPad\CloudPad\bin\Debug\net461\CloudPad.dll</Reference>
+  <Reference Relative="bin\CloudPad.dll">bin\CloudPad.dll</Reference>
   <Namespace>LINQPad.ObjectModel</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
 </Query>

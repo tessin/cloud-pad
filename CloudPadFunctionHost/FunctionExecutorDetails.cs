@@ -8,6 +8,6 @@ namespace CloudPadFunctionHost
         public string LINQPadScriptFileName { get; set; }
 
         [JsonProperty("linqPadScriptMethodName")]
-        public string LINQPadMethodName { get; set; }
+        public string LINQPadScriptMethodName { get; set; }
     }
 }

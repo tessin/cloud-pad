@@ -2,6 +2,7 @@
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,8 +27,11 @@ namespace CloudPadFunctionHost
             var fn = Path.Combine(executionContext.FunctionDirectory, "function.json");
             if (!_functionDetails.TryGetValue(fn, out var details))
             {
-                _functionDetails.TryAdd(fn, details = JsonConvert.DeserializeObject<FunctionExecutorDetails>(File.ReadAllText(fn)));
+                var details2 = JsonConvert.DeserializeObject<FunctionExecutorDetails>(File.ReadAllText(fn));
+                details2.LINQPadScriptFileName = Path.GetFullPath(Path.Combine(executionContext.FunctionDirectory, details2.LINQPadScriptFileName)); // resolve path
+                _functionDetails.TryAdd(fn, details = details2);
             }
+            Debug.WriteLine($"{executionContext.InvocationId} -> {details.LINQPadScriptFileName}:{details.LINQPadScriptMethodName}");
             return details;
         }
 
@@ -37,7 +41,7 @@ namespace CloudPadFunctionHost
 
             return _invoker.RunHttpTriggerAsync(
                 details.LINQPadScriptFileName,
-                details.LINQPadMethodName,
+                details.LINQPadScriptMethodName,
                 req,
                 cancellationToken
             );
@@ -49,7 +53,7 @@ namespace CloudPadFunctionHost
 
             return _invoker.RunTimerTriggerAsync(
                 details.LINQPadScriptFileName,
-                details.LINQPadMethodName,
+                details.LINQPadScriptMethodName,
                 cancellationToken
             );
         }

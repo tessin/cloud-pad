@@ -6,7 +6,6 @@ namespace CloudPadFunctionHost
 {
     public static class TimerFunction
     {
-        [FunctionName(nameof(TimerFunction))]
         public static Task Run(
             [TimerTrigger("")]
             TimerInfo myTimer,

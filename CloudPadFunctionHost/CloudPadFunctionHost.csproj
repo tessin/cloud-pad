@@ -1,25 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-    <RootNamespace>CloudPadFunctionHost</RootNamespace>
-    <AssemblyName>CloudPadFunctionHost</AssemblyName>
-  </PropertyGroup>
-  <ItemGroup>    
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.13" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CloudPad\CloudPad.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="host.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="local.settings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-    </None>
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net461</TargetFramework>
+        <RootNamespace>CloudPadFunctionHost</RootNamespace>
+        <AssemblyName>CloudPadFunctionHost</AssemblyName>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.13" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\CloudPad\CloudPad.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Microsoft.CSharp" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="local.settings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="host.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="local.settings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </None>
+    </ItemGroup>
+    <Target Name="PostBuild" AfterTargets="_GenerateFunctionsPostBuild">
+        <Exec Command="&quot;C:\Program Files (x86)\LINQPad5\LPRun.exe&quot; $(SolutionDir)\examples\hello_http.linq -compile -out $(TargetDir)" />
+    </Target>
 </Project>

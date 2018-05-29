@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
@@ -10,7 +11,19 @@ namespace CloudPad.Internal
     {
         private readonly Func<string, Task<ILINQPadScript>> _compileAsync;
 
+        private Proxy()
+        {
+#if DEBUG
+            Trace.Listeners.Add(new ConsoleTraceListener());
+            Trace.WriteLine("proxy is runnig (trace)...");
+
+            Debug.Listeners.Add(new ConsoleTraceListener());
+            Debug.WriteLine("proxy is runnig (debug)...");
+#endif
+        }
+
         public Proxy(Func<string, Task<ILINQPadScript>> compileAsync)
+            : this()
         {
             _compileAsync = compileAsync;
         }

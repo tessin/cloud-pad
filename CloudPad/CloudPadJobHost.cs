@@ -247,6 +247,17 @@ namespace CloudPad
         {
             Trace.Listeners.Add(new ConsoleTraceListener());
 
+            const string OutputDirectory = "out";
+
+            var args = new Args(OutputDirectory);
+            if (!args.Parse(_args))
+            {
+                Environment.Exit(2);
+                return;
+            }
+
+            // ================
+
             var utilType = Type.GetType("LINQPad.Util, LINQPad", false);
             if (utilType == null)
             {
@@ -281,6 +292,8 @@ namespace CloudPad
             using (var fs = File.Create(zipFileName))
             {
                 var zip = new ZipArchive(fs, ZipArchiveMode.Create);
+
+                // todo: wash LINQPad script (fix broken assembly references)
 
                 zip.CreateEntryFromFile(linqPadScriptFileName, "scripts/" + Path.GetFileName(linqPadScriptFileName));
 
@@ -321,6 +334,11 @@ namespace CloudPad
                 }
 
                 // proxy.linq
+                // todo: wash LINQPad script (fix broken assembly references)
+
+                // proxy should probably be deployed as runtime not as functions, 
+                // if you want to deploy multiple scripts to the same Azure function host
+
                 {
                     var entry = zip.CreateEntry("bin/proxy.linq");
 
@@ -333,7 +351,26 @@ namespace CloudPad
                 zip.Dispose();
             }
 
-            if (0 < _args.Length && _args[0].StartsWith("publish-profile-"))
+            if (args.Has(OutputDirectory))
+            {
+                Log.Debug.Append(args.GetSingle(OutputDirectory));
+                var outputDirectory = Path.GetFullPath(args.GetSingle(OutputDirectory));
+                Log.Debug.Append($"extracting '{outputDirectory}'...");
+                using (var inputStream = File.Open(zipFileName, FileMode.Open))
+                {
+                    var zip = new ZipArchive(inputStream);
+                    foreach (var entry in zip.Entries)
+                    {
+                        var outputFileName = Path.Combine(outputDirectory, entry.FullName);
+                        Directory.CreateDirectory(Path.GetDirectoryName(outputFileName));
+                        entry.ExtractToFile(outputFileName, true);
+                        Log.Debug.Append($"extracted '{entry.FullName}'");
+                    }
+                }
+            }
+
+            //if (0 < _args.Length && _args[0].StartsWith("publish-profile-"))
+            if (false)
             {
                 // ok, nice!
 

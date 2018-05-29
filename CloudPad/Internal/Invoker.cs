@@ -49,19 +49,19 @@ namespace CloudPad.Internal
                 // is LINQPad server running?
                 if (_serverTask == null)
                 {
+                    Log.Debug.Append($"LINQPad proxy server is not running");
+
                     var request = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
                     var response = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
 
                     var processStartInfo = new ProcessStartInfo { UseShellExecute = false };
 
                     // if Azure these need to be changed
+                    var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("REGION_NAME"));
 
-                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("REGION_NAME")))
-                    {
-                        processStartInfo.FileName = @"C:\Program Files (x86)\LINQPad5\LPRun.exe";
-                        processStartInfo.Arguments = "-optimize" + " " + "\"" + @"C:\Users\leidegre\Source\tessin\CloudPad\CloudPad\proxy.linq" + "\"" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
-                    }
-                    else
+                    Log.Debug.Append($"{nameof(isAzure)}={isAzure}");
+
+                    if (isAzure)
                     {
                         // todo:
                         // Environment.GetEnvironmentVariable("CLOUD_PAD_LINQ_PAD_VERSION");
@@ -73,8 +73,17 @@ namespace CloudPad.Internal
                         }
 
                         processStartInfo.FileName = Path.Combine(linqPadDirectory, "LPRun.exe");
-                        processStartInfo.Arguments = "-optimize" + " " + "\"" + @"D:\home\site\wwwroot\bin\proxy.linq" + "\"" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+                        processStartInfo.WorkingDirectory = @"D:\home\site\wwwroot";
                     }
+                    else
+                    {
+                        processStartInfo.FileName = @"C:\Program Files (x86)\LINQPad5\LPRun.exe";
+                        //processStartInfo.WorkingDirectory = @"bin";
+                    }
+
+                    processStartInfo.Arguments = "-optimize" + " " + @"bin\proxy.linq" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+
+                    // dump Proxy
 #if DEBUG
                     processStartInfo.RedirectStandardOutput = true;
                     processStartInfo.RedirectStandardError = true;
@@ -82,12 +91,17 @@ namespace CloudPad.Internal
 
                     var childProcess = Process.Start(processStartInfo);
 
+                    Log.Debug.Append($"LINQPad proxy server started");
+
 #if DEBUG
                     childProcess.OutputDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Output");
                     childProcess.BeginOutputReadLine();
+
                     childProcess.ErrorDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Error");
                     childProcess.BeginErrorReadLine();
 #endif
+
+                    // todo: how to validate the the snippet actually started
 
                     request.DisposeLocalCopyOfClientHandle();
                     response.DisposeLocalCopyOfClientHandle();
@@ -137,6 +151,8 @@ namespace CloudPad.Internal
                 {
                     await HttpMessage.SerializeRequest(req, outputStream);
                 }
+
+                Log.Debug.Append($"request written to file {reqFn}");
 
                 var result = await RunAsync(
                     linqPadScriptFileName,
