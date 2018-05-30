@@ -13,13 +13,7 @@ namespace CloudPad.Internal
 
         private Proxy()
         {
-#if DEBUG
             Trace.Listeners.Add(new ConsoleTraceListener());
-            Trace.WriteLine("proxy is runnig (trace)...");
-
-            Debug.Listeners.Add(new ConsoleTraceListener());
-            Debug.WriteLine("proxy is runnig (debug)...");
-#endif
         }
 
         public Proxy(Func<string, Task<ILINQPadScript>> compileAsync)
@@ -30,6 +24,20 @@ namespace CloudPad.Internal
 
         public async Task RunAsync(string[] args, CancellationToken cancellationToken)
         {
+            if (!(0 < args.Length))
+            {
+                Log.Trace.Append("missing required command-line argument <request-handle>");
+                Environment.Exit(2);
+                return;
+            }
+
+            if (!(1 < args.Length))
+            {
+                Log.Trace.Append("missing required command-line argument <response-handle>");
+                Environment.Exit(2);
+                return;
+            }
+
             var requestHandle = args[0];
             var responseHandle = args[1];
 

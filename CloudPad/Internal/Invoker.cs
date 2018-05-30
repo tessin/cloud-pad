@@ -78,7 +78,7 @@ namespace CloudPad.Internal
                     else
                     {
                         processStartInfo.FileName = @"C:\Program Files (x86)\LINQPad5\LPRun.exe";
-                        //processStartInfo.WorkingDirectory = @"bin";
+                        processStartInfo.WorkingDirectory = Environment.CurrentDirectory;
                     }
 
                     processStartInfo.Arguments = "-optimize" + " " + @"bin\proxy.linq" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
@@ -102,6 +102,9 @@ namespace CloudPad.Internal
 #endif
 
                     // todo: how to validate the the snippet actually started
+                    childProcess.Exited += (sender, e) => {
+                        // todo: abort pending tasks, clear serverTask
+                    };
 
                     request.DisposeLocalCopyOfClientHandle();
                     response.DisposeLocalCopyOfClientHandle();
@@ -109,7 +112,7 @@ namespace CloudPad.Internal
                     _request = request;
                     _response = response;
                     _childProcess = childProcess;
-                    _outstanding = new ConcurrentDictionary<Guid, TaskCompletionSource<Result>>();
+                    _outstanding = new ConcurrentDictionary<Guid, TaskCompletionSource<Result>>(); // todo: multi message channel
                     _serverTask = Task.Factory.StartNew(() => ServerAsync()).Unwrap();
                 }
             }

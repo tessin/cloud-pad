@@ -83,6 +83,8 @@ namespace CloudPad
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
+            // only when running locally as a LINQPad script
+
             Configuration.EnsureInitialized();
 
             _httpListener.Start();
@@ -127,11 +129,17 @@ namespace CloudPad
 
         public async Task<HttpResponseMessage> ProcessAsync(HttpRequestMessage req, CancellationToken cancellationToken)
         {
+            // when running locally as a LINQPad script and when running as a Azure function
+
             Configuration.EnsureInitialized();
+
+            Log.Debug.Append($"incoming request {req.Method} {req.RequestUri.AbsoluteUri}");
 
             var routeData = Configuration.Routes.GetRouteData(req);
             if (routeData == null)
             {
+                Log.Debug.Append($"route not found");
+
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
 

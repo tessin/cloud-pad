@@ -234,6 +234,7 @@ namespace CloudPad
         {
             var cts = new CancellationTokenSource();
 
+            // subscribe to LINQPad script cancellation
             var utilType = Type.GetType("LINQPad.Util, LINQPad", false);
             if (utilType != null)
             {
