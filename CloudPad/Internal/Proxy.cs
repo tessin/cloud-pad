@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,38 +37,100 @@ namespace CloudPad.Internal
                 return;
             }
 
-            var requestHandle = args[0];
-            var responseHandle = args[1];
-
-            using (var request = new AnonymousPipeClientStream(PipeDirection.In, requestHandle))
+            using (var duplexPipe = new DuplexPipe(args[0], args[1]))
             {
-                using (var response = new AnonymousPipeClientStream(PipeDirection.Out, responseHandle))
+                //var tasks = new List<Task>();
+                //var receiveTask = request.ReceiveAsync();
+                //tasks.Add(receiveTask);
+
+                for (; ; )
                 {
-                    //var tasks = new List<Task>();
-                    //var receiveTask = request.ReceiveAsync();
-                    //tasks.Add(receiveTask);
-
-                    for (; ; )
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        //await Task.WhenAny(tasks);
-
-                        var envelope = await request.ReceiveAsync<Envelope>();
-                        if (envelope == null)
-                        {
-                            break;
-                        }
-
-                        var compilation = await _compileAsync(envelope.LINQPadScriptFileName);
-
-                        var result = await compilation.RunAsync(new[] { envelope.MethodName }.Concat(envelope.Args ?? new string[0]).ToArray());
-
-                        response.Send(new Result { CorrelationId = envelope.CorrelationId, Text = await result.GetResultAsync() });
+                        break;
                     }
+
+                    //await Task.WhenAny(tasks);
+
+                    var envelope = await duplexPipe.InPipe.ReceiveAsync<Envelope>();
+                    if (envelope == null)
+                    {
+                        break;
+                    }
+
+                    ILINQPadScript compilation;
+
+                    try
+                    {
+                        compilation = await _compileAsync(envelope.LINQPadScriptFileName);
+                    }
+                    catch (Exception ex)
+                    {
+#if DEBUG
+                        Debugger.Launch();
+                        Log.Debug.Append(
+                            $"script compilation error '{envelope.LINQPadScriptFileName}': {ex.Message}",
+                            correlationId: envelope.CorrelationId
+                        );
+#endif
+                        var fileNotFound = ex as System.IO.FileNotFoundException;
+                        if (fileNotFound != null)
+                        {
+                            Log.Debug.Append(fileNotFound.FusionLog, correlationId: envelope.CorrelationId);
+                        }
+
+                        duplexPipe.OutPipe.Send(new Result
+                        {
+                            CorrelationId = envelope.CorrelationId,
+                            ErrorCode = ResultType.CompileError,
+                            ExceptionTypeFullName = ex.GetType().FullName,
+                            ExceptionMessage = ex.Message,
+                            ExceptionStackTrace = ex.StackTrace,
+                            ExceptionFusionLog = fileNotFound?.FusionLog,
+                        });
+
+                        continue;
+                    }
+
+                    ILINQPadScriptResult result;
+
+                    try
+                    {
+                        result = await compilation.RunAsync(new[] { envelope.MethodName }.Concat(envelope.Args ?? new string[0]).ToArray());
+                    }
+                    catch (Exception ex)
+                    {
+#if DEBUG
+                        Debugger.Launch();
+                        Log.Debug.Append(
+                            $"script invocation error '{envelope.LINQPadScriptFileName}': {ex.Message}",
+                            correlationId: envelope.CorrelationId
+                        );
+#endif
+                        var fileNotFound = ex as System.IO.FileNotFoundException;
+                        if (fileNotFound != null)
+                        {
+                            Log.Debug.Append(fileNotFound.FusionLog, correlationId: envelope.CorrelationId);
+                        }
+
+                        duplexPipe.OutPipe.Send(new Result
+                        {
+                            CorrelationId = envelope.CorrelationId,
+                            ErrorCode = ResultType.RunError,
+                            ExceptionTypeFullName = ex.GetType().FullName,
+                            ExceptionMessage = ex.Message,
+                            ExceptionStackTrace = ex.StackTrace,
+                            ExceptionFusionLog = fileNotFound?.FusionLog,
+                        });
+
+                        continue;
+                    }
+
+                    duplexPipe.OutPipe.Send(new Result
+                    {
+                        CorrelationId = envelope.CorrelationId,
+                        Text = await result.GetResultAsync()
+                    });
                 }
             }
         }

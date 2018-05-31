@@ -28,15 +28,30 @@ namespace CloudPad
             private static readonly int _currentProcessId = Process.GetCurrentProcess().Id;
 
             [Conditional("DEBUG")]
-            public static void Append(FormattableString formattable, [CallerMemberName] string callerMemberName = null)
+            public static void Append(FormattableString formattable, Guid? correlationId = null, [CallerMemberName] string callerMemberName = null)
             {
-                Append(FormattableString.Invariant(formattable), callerMemberName);
+                Append(FormattableString.Invariant(formattable), correlationId, callerMemberName);
             }
 
             [Conditional("DEBUG")]
-            public static void Append(string message, [CallerMemberName] string callerMemberName = null)
+            public static void Append(string message, Guid? correlationId = null, [CallerMemberName] string callerMemberName = null)
             {
-                System.Diagnostics.Debug.WriteLine(FormattableString.Invariant($"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {callerMemberName,16} {message}"));
+                if (correlationId.HasValue)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        FormattableString.Invariant(
+                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {correlationId,36} {callerMemberName}: {message}"
+                        )
+                    );
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        FormattableString.Invariant(
+                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {callerMemberName}: {message}"
+                        )
+                    );
+                }
             }
         }
     }

@@ -294,7 +294,9 @@ namespace CloudPad
             {
                 var zip = new ZipArchive(fs, ZipArchiveMode.Create);
 
-                // todo: wash LINQPad script (fix broken assembly references)
+                // todo: wash LINQPad script 
+                // - fix assembly references
+                // - fix connection string
 
                 zip.CreateEntryFromFile(linqPadScriptFileName, "scripts/" + Path.GetFileName(linqPadScriptFileName));
 
@@ -331,21 +333,6 @@ namespace CloudPad
                         };
                         jsonSerializer.Serialize(new JsonTextWriter(textWriter), functionJson);
                         textWriter.Flush();
-                    }
-                }
-
-                // proxy.linq
-                // todo: wash LINQPad script (fix broken assembly references)
-
-                // proxy should probably be deployed as runtime not as functions, 
-                // if you want to deploy multiple scripts to the same Azure function host
-
-                {
-                    var entry = zip.CreateEntry("bin/proxy.linq");
-
-                    using (var entryStream = entry.Open())
-                    {
-                        assembly.GetManifestResourceStream("CloudPad.proxy.linq").CopyTo(entryStream);
                     }
                 }
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -73,7 +74,7 @@ namespace CloudPad.Internal
                         }
 
                         processStartInfo.FileName = Path.Combine(linqPadDirectory, "LPRun.exe");
-                        processStartInfo.WorkingDirectory = @"D:\home\site\wwwroot";
+                        processStartInfo.WorkingDirectory = @"D:\home\site\wwwroot\bin";
                     }
                     else
                     {
@@ -81,7 +82,25 @@ namespace CloudPad.Internal
                         processStartInfo.WorkingDirectory = Environment.CurrentDirectory;
                     }
 
-                    processStartInfo.Arguments = "-optimize" + " " + @"bin\proxy.linq" + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+                    {
+                        // deploy proxy.linq
+
+                        var proxyScript = this.GetType().Assembly.GetManifestResourceStream("CloudPad.proxy.linq");
+                        var proxyScriptDigest = BitConverter.ToString(new SHA256Managed().ComputeHash(proxyScript)).Replace("-", "").Substring(0, 32).ToLowerInvariant();
+                        var proxyScriptFileName = "proxy_" + proxyScriptDigest + ".linq";
+
+                        var fn = Path.Combine(processStartInfo.WorkingDirectory, proxyScriptFileName);
+                        if (!File.Exists(fn))
+                        {
+                            proxyScript.Position = 0;
+                            using (var fs = File.Create(fn))
+                            {
+                                proxyScript.CopyTo(fs);
+                            }
+                        }
+
+                        processStartInfo.Arguments = "-optimize" + " " + proxyScriptFileName + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+                    }
 
                     // dump Proxy
 #if DEBUG
@@ -91,7 +110,7 @@ namespace CloudPad.Internal
 
                     var childProcess = Process.Start(processStartInfo);
 
-                    Log.Debug.Append($"LINQPad proxy server started");
+                    Log.Debug.Append($"LINQPad proxy started");
 
 #if DEBUG
                     childProcess.OutputDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Output");
@@ -101,8 +120,10 @@ namespace CloudPad.Internal
                     childProcess.BeginErrorReadLine();
 #endif
 
-                    // todo: how to validate the the snippet actually started
-                    childProcess.Exited += (sender, e) => {
+                    childProcess.Exited += (sender, e) =>
+                    {
+                        Log.Debug.Append($"LINQPad proxy exited");
+
                         // todo: abort pending tasks, clear serverTask
                     };
 
@@ -202,9 +223,18 @@ namespace CloudPad.Internal
 
         private void HandleResult(Result result)
         {
-            // todo: check for error
-
-            Log.Debug.Append(result.Text);
+            if (result.ErrorCode == 0)
+            {
+                Log.Debug.Append(result.Text); // OK
+            }
+            else
+            {
+                throw new CloudPadException("remote script execution failed",
+                    remoteTypeFullName: result.ExceptionTypeFullName,
+                    remoteMessage: result.ExceptionMessage,
+                    remoteStackTrace: result.ExceptionStackTrace
+                );
+            }
         }
 
         public void Dispose()
