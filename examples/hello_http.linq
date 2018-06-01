@@ -1,5 +1,5 @@
 <Query Kind="Program">
-  <Reference Relative="..\CloudPad\bin\Debug\net461\CloudPad.dll">C:\Users\leidegre\Source\Repos\cloud-pad\CloudPad\bin\Debug\net461\CloudPad.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Debug\net461\CloudPad.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\CloudPad.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\Microsoft.Build.Framework.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\Microsoft.Build.Tasks.v4.0.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\Microsoft.Build.Utilities.v4.0.dll</Reference>
@@ -25,18 +25,24 @@
   <Namespace>System.Web.Http</Namespace>
 </Query>
 
-async Task Main(string[] args)
-{
-	using (var host = new CloudPadJobHost(this, args))
-	{
-		await host.WaitAsync();
-	}
-}
+Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
 
 // Define other methods and classes here
 
-[HttpTrigger(Route = "hello")]
-HttpResponseMessage Hello(HttpRequestMessage req)
+[HttpTrigger(Route = "test")]
+HttpResponseMessage Test(HttpRequestMessage req)
 {
-	return req.CreateText("world");
+	var res = req.CreateResponse();
+	res.Content = new StringContent("hello world", Encoding.UTF8, "text/plain");
+	return res;
+}
+
+[HttpTrigger(Route = "test-async")]
+async Task<HttpResponseMessage> TestAsync(HttpRequestMessage req, CancellationToken cancellationToken)
+{
+	await Task.Delay(100);
+
+	var res = req.CreateResponse();
+	res.Content = new StringContent("hello world asynchronous", Encoding.UTF8, "text/plain");
+	return res;
 }

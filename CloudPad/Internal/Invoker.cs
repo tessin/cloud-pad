@@ -13,22 +13,21 @@ namespace CloudPad.Internal
 {
     public class Invoker : IDisposable
     {
-        private AnonymousPipeServerStream _request;
-        private AnonymousPipeServerStream _response;
+        private DuplexPipe _serverPipe;
         private Process _childProcess;
         private ConcurrentDictionary<Guid, TaskCompletionSource<Result>> _outstanding;
         private Task _serverTask;
 
         private async Task ServerAsync()
         {
-            var response = _response;
+            var serverPipe = _serverPipe;
             var outstanding = _outstanding;
 
             Log.Debug.Append($"running");
 
             for (; ; )
             {
-                var msg = await response.ReceiveAsync<Result>();
+                var msg = await serverPipe.InPipe.ReceiveAsync<Result>();
                 if (msg == null)
                 {
                     return; // lprun stopped, crashed or otherwise exited
@@ -52,25 +51,22 @@ namespace CloudPad.Internal
                 {
                     Log.Debug.Append($"LINQPad proxy server is not running");
 
-                    var request = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable);
-                    var response = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
+                    var serverPipe = new DuplexPipe();
 
                     var processStartInfo = new ProcessStartInfo { UseShellExecute = false };
 
-                    // if Azure these need to be changed
                     var isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("REGION_NAME"));
 
                     Log.Debug.Append($"{nameof(isAzure)}={isAzure}");
 
                     if (isAzure)
                     {
-                        // todo:
-                        // Environment.GetEnvironmentVariable("CLOUD_PAD_LINQ_PAD_VERSION");
+                        // todo: Environment.GetEnvironmentVariable("CLOUD_PAD_LINQ_PAD_VERSION"); ?
 
                         var linqPadDirectory = Directory.EnumerateDirectories(@"D:\home\site\tools", "LINQPad.*").LastOrDefault();
                         if (linqPadDirectory == null)
                         {
-                            throw new Exception("LINQPad is not installed on host");
+                            throw new Exception(@"LINQPad is not installed in location 'D:\home\site\tools\LINQPad.*' on host");
                         }
 
                         processStartInfo.FileName = Path.Combine(linqPadDirectory, "LPRun.exe");
@@ -98,20 +94,19 @@ namespace CloudPad.Internal
                                 proxyScript.CopyTo(fs);
                             }
                         }
-
-                        processStartInfo.Arguments = "-optimize" + " " + proxyScriptFileName + " " + request.GetClientHandleAsString() + " " + response.GetClientHandleAsString();
+#if DEBUG
+                        processStartInfo.Arguments = proxyScriptFileName + " " + serverPipe.GetClientHandleAsString();
+#else
+                        processStartInfo.Arguments = "-optimize" + " " + proxyScriptFileName + " " + serverPipe.GetClientHandleAsString();
+#endif
                     }
-
-                    // dump Proxy
 #if DEBUG
                     processStartInfo.RedirectStandardOutput = true;
                     processStartInfo.RedirectStandardError = true;
 #endif
-
                     var childProcess = Process.Start(processStartInfo);
 
                     Log.Debug.Append($"LINQPad proxy started");
-
 #if DEBUG
                     childProcess.OutputDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Output");
                     childProcess.BeginOutputReadLine();
@@ -119,7 +114,6 @@ namespace CloudPad.Internal
                     childProcess.ErrorDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Error");
                     childProcess.BeginErrorReadLine();
 #endif
-
                     childProcess.Exited += (sender, e) =>
                     {
                         Log.Debug.Append($"LINQPad proxy exited");
@@ -127,11 +121,9 @@ namespace CloudPad.Internal
                         // todo: abort pending tasks, clear serverTask
                     };
 
-                    request.DisposeLocalCopyOfClientHandle();
-                    response.DisposeLocalCopyOfClientHandle();
+                    serverPipe.DisposeLocalCopyOfClientHandle();
 
-                    _request = request;
-                    _response = response;
+                    _serverPipe = serverPipe;
                     _childProcess = childProcess;
                     _outstanding = new ConcurrentDictionary<Guid, TaskCompletionSource<Result>>(); // todo: multi message channel
                     _serverTask = Task.Factory.StartNew(() => ServerAsync()).Unwrap();
@@ -149,7 +141,7 @@ namespace CloudPad.Internal
 
             Log.Debug.Append($"sending {nameof(envelope.CorrelationId)}={envelope.CorrelationId}");
 
-            _request.Send(envelope);
+            _serverPipe.OutPipe.Send(envelope);
 
             using (cancellationToken.Register(() => tcs.TrySetCanceled()))
             {
@@ -256,6 +248,12 @@ namespace CloudPad.Internal
                     {
                         childProcess.Dispose();
                     }
+                }
+
+                var serverPipe = _serverPipe;
+                if (serverPipe != null)
+                {
+                    serverPipe.Dispose();
                 }
             }
         }

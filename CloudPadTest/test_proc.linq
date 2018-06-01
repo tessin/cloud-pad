@@ -13,20 +13,8 @@ Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
 
 // Define other methods and classes here
 
-[HttpTrigger(Route = "test")]
-HttpResponseMessage Test(HttpRequestMessage req)
+[TimerTrigger("")]
+void Tick()
 {
-	var res = req.CreateResponse();
-	res.Content = new StringContent("hello world", Encoding.UTF8, "text/plain");
-	return res;
-}
-
-[HttpTrigger(Route = "test-async")]
-async Task<HttpResponseMessage> TestAsync(HttpRequestMessage req, CancellationToken cancellationToken)
-{
-	await Task.Delay(100);
-
-	var res = req.CreateResponse();
-	res.Content = new StringContent("hello world asynchronous", Encoding.UTF8, "text/plain");
-	return res;
+	Console.WriteLine(Process.GetCurrentProcess().Id);
 }

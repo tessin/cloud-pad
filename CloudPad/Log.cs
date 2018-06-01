@@ -11,22 +11,35 @@ namespace CloudPad
         public static class Trace
         {
             [Conditional("TRACE")]
-            public static void Append(FormattableString formattable, [CallerMemberName] string callerMemberName = null)
+            public static void Append(FormattableString formattable, Guid? correlationId = null, [CallerMemberName] string callerMemberName = null)
             {
-                Append(FormattableString.Invariant(formattable), callerMemberName);
+                Append(FormattableString.Invariant(formattable), correlationId, callerMemberName);
             }
 
             [Conditional("TRACE")]
-            public static void Append(string message, [CallerMemberName] string callerMemberName = null)
+            public static void Append(string message, Guid? correlationId = null, [CallerMemberName] string callerMemberName = null)
             {
-                System.Diagnostics.Trace.WriteLine(FormattableString.Invariant($"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {callerMemberName,16} {message}"));
+                if (correlationId.HasValue)
+                {
+                    System.Diagnostics.Trace.WriteLine(
+                        FormattableString.Invariant(
+                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {correlationId,36} {callerMemberName}: {message?.Trim()}"
+                        )
+                    );
+                }
+                else
+                {
+                    System.Diagnostics.Trace.WriteLine(
+                        FormattableString.Invariant(
+                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {callerMemberName}: {message?.Trim()}"
+                        )
+                    );
+                }
             }
         }
 
         public static class Debug
         {
-            private static readonly int _currentProcessId = Process.GetCurrentProcess().Id;
-
             [Conditional("DEBUG")]
             public static void Append(FormattableString formattable, Guid? correlationId = null, [CallerMemberName] string callerMemberName = null)
             {
@@ -40,7 +53,7 @@ namespace CloudPad
                 {
                     System.Diagnostics.Debug.WriteLine(
                         FormattableString.Invariant(
-                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {correlationId,36} {callerMemberName}: {message}"
+                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {correlationId,36} {callerMemberName}: {message?.Trim()}"
                         )
                     );
                 }
@@ -48,7 +61,7 @@ namespace CloudPad
                 {
                     System.Diagnostics.Debug.WriteLine(
                         FormattableString.Invariant(
-                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {callerMemberName}: {message}"
+                            $"{DateTimeOffset.Now:o} [{_currentProcessId,5}] {callerMemberName}: {message?.Trim()}"
                         )
                     );
                 }

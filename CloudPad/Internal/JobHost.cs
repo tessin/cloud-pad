@@ -1,4 +1,4 @@
-﻿using CloudPad.Internal;
+﻿using NCrontab;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 
-namespace CloudPad
+namespace CloudPad.Internal
 {
     class CloudPadReflectionHttpMessageHandler : HttpMessageHandler
     {
@@ -63,15 +63,20 @@ namespace CloudPad
         }
     }
 
-    public class CloudPadJobHost : IDisposable
+    public class JobHost : IDisposable
     {
         private readonly HttpServer _httpListener;
+        private readonly List<Timer> _timers = new List<Timer>();
         private readonly object _context;
         private readonly string _methodName;
         private readonly string[] _args;
 
-        public CloudPadJobHost(object context, string[] args)
+        public JobHost(object context, string[] args)
         {
+            //#if DEBUG
+            //            Debugger.Launch();
+            //#endif
+
             _httpListener = new HttpServer();
             _context = context;
 
@@ -168,14 +173,30 @@ namespace CloudPad
                 return true;
             }
 
+            if (binding.Type == BindingType.TimerTrigger)
+            {
+                var schedule = CrontabSchedule.TryParse(binding.CronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = HasSeconds(binding.CronExpression) });
+                if (schedule != null)
+                {
+                    _timers.Add(new Timer(_context, binding.Method, schedule));
+                    return true;
+                }
+                return false;
+            }
+
             return false;
+        }
+
+        private static bool HasSeconds(string cronExpression)
+        {
+            return cronExpression.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length != 5;
         }
 
         public async Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(_methodName))
             {
-                await RunAsync();
+                await RunAsync(cancellationToken);
             }
             else
             {
@@ -230,9 +251,16 @@ namespace CloudPad
             }
         }
 
-        private async Task RunAsync()
+        private async Task RunAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var cts = new CancellationTokenSource();
+
+            var cancellationTokenRegistration = default(CancellationTokenRegistration);
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationTokenRegistration = cancellationToken.Register(() => cts.Cancel());
+            }
 
             // subscribe to LINQPad script cancellation
             var utilType = Type.GetType("LINQPad.Util, LINQPad", false);
@@ -241,7 +269,18 @@ namespace CloudPad
                 utilType.GetEvent("Cleanup").AddEventHandler(null, new EventHandler((sender, e) => cts.Cancel()));
             }
 
-            await _httpListener.RunAsync(cts.Token);
+            var tasks = new List<Task>();
+
+            foreach (var timer in _timers)
+            {
+                tasks.Add(timer.RunAsync(cts.Token));
+            }
+
+            tasks.Add(_httpListener.RunAsync(cts.Token));
+
+            await Task.WhenAll(tasks);
+
+            cancellationTokenRegistration.Dispose();
         }
 
         private async Task CompileAsync()

@@ -83,7 +83,7 @@ namespace CloudPad
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
-            // only when running locally as a LINQPad script
+            // only when running locally as a LINQPad script and if there are HTTP bindings 
 
             Configuration.EnsureInitialized();
 
@@ -105,7 +105,15 @@ namespace CloudPad
                         break;
                     }
 
-                    var context = await _httpListener.GetContextAsync();
+                    HttpListenerContext context;
+                    try
+                    {
+                        context = await _httpListener.GetContextAsync();
+                    }
+                    catch (HttpListenerException)
+                    {
+                        continue;
+                    }
 
                     try
                     {
@@ -138,7 +146,7 @@ namespace CloudPad
             var routeData = Configuration.Routes.GetRouteData(req);
             if (routeData == null)
             {
-                Log.Debug.Append($"route not found");
+                Log.Debug.Append($"route match not found");
 
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
