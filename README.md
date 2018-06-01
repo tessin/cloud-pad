@@ -9,10 +9,10 @@ Add reference to NuGet package `CloudPad` (_if you don't have a LINQPad premium 
 There's minimal setup and you cannot just take any LINQPad script and run it as an Azure function you need to have this bootstrapping snippet in your LINQPad program.
 
 ```cs
-Task Main(string[] args) => this.MainAsync(args);
+Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
 ```
 
-Any non-static method defined in the LINQPad script is _potentially_ an Azure function that can be invoked. As long as there is a supported binding **it should just work!**
+Any non-static method defined in the LINQPad script is _potentially_ an Azure function that can be invoked. As long as there is a supported binding, it should just work!
 
 Supported bindings are:
 
@@ -20,7 +20,7 @@ Supported bindings are:
 * Timer
 
 ```cs
-Task Main(string[] args) => this.MainAsync(args);
+Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
 
 // Define other methods and classes here
 
@@ -51,12 +51,6 @@ When testing and developing you may get away with referencing only specific DLLs
 If you attempt to add a NuGet package that is incompatible with these dependencies you may run into additional issues.
 
 If stuck on an issue like this, enable assembly binding logging, i.e. `FusionLog` to getter better and more detailed error information.
-
-### `MainAsync` does not appear in statement completion list
-
-**This is by design.** It was the most compact way to write an entry point but required an extension of `object` <sup>[1]</sup>. The `CloudPad` entry point `MainAsync` is marked with `Browsable(false)` and `EditorBrowsable(EditorBrowsableState.Never)` to prevent it from cluttering the statement completion list.
-
-[1] There's no shared metadata between a LINQPad `UserQuery` (i.e. the type of `this`) and `CloudPad`.
 
 ## API Reference
 
