@@ -9,6 +9,9 @@
     <PackageId>CloudPad</PackageId>
     <Authors>Tessin Nordic AB</Authors>
     <Description>Run LINQPad scripts as Azure funcitons.</Description>
+    <RepositoryUrl></RepositoryUrl>
+    <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
+    <PackageTags>LINQPad Azure</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

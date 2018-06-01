@@ -298,7 +298,10 @@ namespace CloudPad
                 // - fix assembly references
                 // - fix connection string
 
-                zip.CreateEntryFromFile(linqPadScriptFileName, "scripts/" + Path.GetFileName(linqPadScriptFileName));
+                var baseName = Path.GetFileNameWithoutExtension(linqPadScriptFileName);
+                var fn = "scripts/" + baseName + "/" + Path.GetFileName(linqPadScriptFileName);
+
+                zip.CreateEntryFromFile(linqPadScriptFileName, fn);
 
                 foreach (var binding in bindings)
                 {
@@ -319,10 +322,10 @@ namespace CloudPad
                             throw new NotSupportedException("trigger binding: " + binding.Type);
                     }
 
-                    functionJson["linqPadScriptFileName"] = "../scripts/" + Path.GetFileName(linqPadScriptFileName);
+                    functionJson["linqPadScriptFileName"] = "../" + fn;
                     functionJson["linqPadScriptMethodName"] = binding.GetMethodName();
 
-                    var entry = zip.CreateEntry(binding.GetMethodName() + "/function.json");
+                    var entry = zip.CreateEntry(baseName + "_" + binding.GetMethodName() + "/function.json");
 
                     using (var entryStream = entry.Open())
                     {
