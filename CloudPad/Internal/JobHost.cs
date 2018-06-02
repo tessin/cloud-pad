@@ -1,5 +1,4 @@
-﻿using NCrontab;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -8,11 +7,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 
 namespace CloudPad.Internal
 {
@@ -33,14 +30,30 @@ namespace CloudPad.Internal
 
         public async Task<int> WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var args = new Args(Options.Method);
-            if (args.Parse(_args))
+            var args = new Args(Options.Method, Options.RequestFileName, Options.ResponseFileName, Options.Compile + ":boolean", Options.OutputDirectory, Options.Publish, Options.Unpublish);
+            if (!args.Parse(_args))
             {
-                Log.Trace.Append("cannot parse command line");
+                Log.Trace.Append("cannot parse command line: " + string.Join(" ", _args));
                 return 2;
             }
 
             var method = args.GetSingleOrDefault(Options.Method);
+            var compile = args.GetSingleOrDefault<bool>(Options.Compile);
+            var outputDirectory = args.GetSingleOrDefault(Options.OutputDirectory);
+            var publish = args.GetSingleOrDefault(Options.Publish);
+            var unpublish = args.GetSingleOrDefault(Options.Unpublish);
+
+            if (compile && unpublish != null)
+            {
+                Log.Trace.Append($"'{Options.Compile}' and '{Options.Unpublish}' are mutually exclusive");
+                return 2;
+            }
+
+            if (publish != null && unpublish != null)
+            {
+                Log.Trace.Append($"'{Options.Publish}' and '{Options.Unpublish}' are mutually exclusive");
+                return 2;
+            }
 
             var index = new FunctionIndex(_context);
 
@@ -48,82 +61,89 @@ namespace CloudPad.Internal
 
             using (var cts = new CancellationScope(cancellationToken))
             {
-                // todo: compilation
-
-                if (string.IsNullOrEmpty(method))
+                if (compile || publish != null)
                 {
-                    await RunAsync(index.Functions, cts.Token);
+                    await CompileAsync(index.Functions, outputDirectory, publish);
                 }
                 else
                 {
-                    // specific function invocation
+                    // todo: unpublish
 
-                    var function = index.Functions.FirstOrDefault(x => x.Name == method);
-                    if (function == null)
+                    if (string.IsNullOrEmpty(method))
                     {
-                        Log.Trace.Append($"function '{method}' not found");
-                        return 1;
+                        await RunAsync(index.Functions, cts.Token);
                     }
-
-                    switch (function.Binding.Type)
+                    else
                     {
-                        case BindingType.HttpTrigger:
-                            {
-                                var reqFileName = args.GetSingleOrDefault(Options.RequestFileName);
-                                if (reqFileName == null)
+                        // specific function invocation
+
+                        var function = index.Functions.FirstOrDefault(x => x.Name == method);
+                        if (function == null)
+                        {
+                            Log.Trace.Append($"function '{method}' not found");
+                            return 1;
+                        }
+
+                        switch (function.Binding.Type)
+                        {
+                            case BindingType.HttpTrigger:
                                 {
-                                    Log.Trace.Append($"HTTP function '{method}' requires -req <request-file-name> option");
-                                    return 1;
-                                }
-
-                                var resFileName = args.GetSingleOrDefault(Options.ResponseFileName);
-                                if (resFileName == null)
-                                {
-                                    Log.Trace.Append($"HTTP function '{method}' requires -res <response-file-name> option");
-                                    return 1;
-                                }
-
-                                using (var httpServer = new HttpServer())
-                                {
-                                    httpServer.RegisterFunction(function);
-
-                                    // invoke HTTP function
-
-                                    HttpRequestMessage req;
-
-                                    using (var inputStream = File.OpenRead(reqFileName))
+                                    var reqFileName = args.GetSingleOrDefault(Options.RequestFileName);
+                                    if (reqFileName == null)
                                     {
-                                        req = HttpMessage.DeserializeRequest(inputStream);
+                                        Log.Trace.Append($"HTTP function '{method}' requires -req <request-file-name> option");
+                                        return 1;
                                     }
 
-                                    var res = await httpServer.InvokeAsync(req, cancellationToken);
-
-                                    using (var outputStream = File.Create(resFileName))
+                                    var resFileName = args.GetSingleOrDefault(Options.ResponseFileName);
+                                    if (resFileName == null)
                                     {
-                                        await HttpMessage.SerializeResponse(res, outputStream);
+                                        Log.Trace.Append($"HTTP function '{method}' requires -res <response-file-name> option");
+                                        return 1;
                                     }
-                                }
-                                break;
-                            }
 
-                        case BindingType.TimerTrigger:
-                            {
-                                using (var timerServer = new TimerServer())
+                                    using (var httpServer = new HttpServer())
+                                    {
+                                        httpServer.RegisterFunction(function);
+
+                                        // invoke HTTP function
+
+                                        HttpRequestMessage req;
+
+                                        using (var inputStream = File.OpenRead(reqFileName))
+                                        {
+                                            req = HttpMessage.DeserializeRequest(inputStream);
+                                        }
+
+                                        var res = await httpServer.InvokeAsync(req, cancellationToken);
+
+                                        using (var outputStream = File.Create(resFileName))
+                                        {
+                                            await HttpMessage.SerializeResponse(res, outputStream);
+                                        }
+                                    }
+                                    break;
+                                }
+
+                            case BindingType.TimerTrigger:
                                 {
-                                    timerServer.RegisterFunction(function);
+                                    using (var timerServer = new TimerServer())
+                                    {
+                                        timerServer.RegisterFunction(function);
 
-                                    // invoke timer function
+                                        // invoke timer function
 
-                                    await timerServer.InvokeAsync(method, cancellationToken);
+                                        await timerServer.InvokeAsync(method, cancellationToken);
+                                    }
+                                    break;
                                 }
-                                break;
-                            }
 
-                        default:
-                            {
-                                Log.Trace.Append($"function '{method}' binding '{function.Binding.Type}' is unsupported");
-                                return 1;
-                            }
+                            default:
+                                {
+                                    Log.Trace.Append($"function '{method}' binding '{function.Binding.Type}' is unsupported");
+                                    return 1;
+                                }
+                        }
                     }
                 }
             }
@@ -174,46 +194,15 @@ namespace CloudPad.Internal
             }
         }
 
-        private async Task CompileAsync()
+        private async Task CompileAsync(
+            IEnumerable<Function> functions,
+            string outputDirectory = null,
+            string publish = null
+        )
         {
-            Trace.Listeners.Add(new ConsoleTraceListener());
+            // todo: packaging...
 
-            const string OutputDirectory = "out";
-
-            var args = new Args(OutputDirectory);
-            if (!args.Parse(_args))
-            {
-                Environment.Exit(2);
-                return;
-            }
-
-            // ================
-
-            var utilType = Type.GetType("LINQPad.Util, LINQPad", false);
-            if (utilType == null)
-            {
-                Log.Trace.Append("cannot find LINQPad Util type");
-                Environment.Exit(1);
-                return;
-            }
-
-            var linqPadScriptFileName = utilType.GetProperty("CurrentQueryPath")?.GetValue(null) as string;
-
-            if (string.IsNullOrEmpty(linqPadScriptFileName))
-            {
-                Log.Trace.Append("cannot find LINQPad script file name");
-                Environment.Exit(1);
-                return;
-            }
-
-            var bindings = RegisterBindings(_context);
-            if (bindings == null)
-            {
-                // error
-                Log.Trace.Append("one or more bindings has errors");
-                Environment.Exit(1);
-                return;
-            }
+            var linqPadScriptFileName = LINQPad.GetCurrentQueryPath() ?? "test.linq";
 
             var assembly = GetType().Assembly;
             var assemblyName = assembly.GetName();
@@ -233,29 +222,33 @@ namespace CloudPad.Internal
 
                 zip.CreateEntryFromFile(linqPadScriptFileName, fn);
 
-                foreach (var binding in bindings)
+                foreach (var function in functions)
                 {
                     var functionJson = new JObject();
 
                     functionJson["generatedBy"] = assemblyName.Name + "-" + assemblyName.Version;
-                    functionJson["bindings"] = JToken.FromObject(new[] { binding });
+                    functionJson["bindings"] = JToken.FromObject(new[] { function.Binding });
                     functionJson["disabled"] = false;
                     functionJson["scriptFile"] = "../bin/CloudPadFunctionHost.dll";
 
-                    switch (binding.Type)
+                    switch (function.Binding.Type)
                     {
                         case BindingType.HttpTrigger:
                             functionJson["entryPoint"] = "CloudPadFunctionHost.HttpFunction.Run";
                             break;
 
+                        case BindingType.TimerTrigger:
+                            functionJson["entryPoint"] = "CloudPadFunctionHost.TimerFunction.Run";
+                            break;
+
                         default:
-                            throw new NotSupportedException("trigger binding: " + binding.Type);
+                            throw new NotSupportedException("trigger binding: " + function.Binding.Type);
                     }
 
                     functionJson["linqPadScriptFileName"] = "../" + fn;
-                    functionJson["linqPadScriptMethodName"] = binding.GetMethodName();
+                    functionJson["linqPadScriptMethodName"] = function.Name;
 
-                    var entry = zip.CreateEntry(baseName + "_" + binding.GetMethodName() + "/function.json");
+                    var entry = zip.CreateEntry(baseName + "_" + function.Name + "/function.json");
 
                     using (var entryStream = entry.Open())
                     {
@@ -272,17 +265,16 @@ namespace CloudPad.Internal
                 zip.Dispose();
             }
 
-            if (args.Has(OutputDirectory))
+            if (outputDirectory != null)
             {
-                Log.Debug.Append(args.GetSingle(OutputDirectory));
-                var outputDirectory = Path.GetFullPath(args.GetSingle(OutputDirectory));
-                Log.Debug.Append($"extracting '{outputDirectory}'...");
+                var outputDirectory2 = Path.GetFullPath(outputDirectory);
+                Log.Debug.Append($"extracting to '{outputDirectory2}'...");
                 using (var inputStream = File.Open(zipFileName, FileMode.Open))
                 {
                     var zip = new ZipArchive(inputStream);
                     foreach (var entry in zip.Entries)
                     {
-                        var outputFileName = Path.Combine(outputDirectory, entry.FullName);
+                        var outputFileName = Path.Combine(outputDirectory2, entry.FullName);
                         Directory.CreateDirectory(Path.GetDirectoryName(outputFileName));
                         entry.ExtractToFile(outputFileName, true);
                         Log.Debug.Append($"extracted '{entry.FullName}'");

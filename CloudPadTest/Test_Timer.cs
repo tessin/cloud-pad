@@ -1,6 +1,7 @@
 using CloudPad.Internal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -13,7 +14,6 @@ namespace CloudPad
     {
         class UserQuery
         {
-            public int i;
             private CancellationTokenSource cts;
 
             public UserQuery(CancellationTokenSource cts)
@@ -21,12 +21,14 @@ namespace CloudPad
                 this.cts = cts;
             }
 
-            [TimerTrigger("*/1 * * * * *")]
-            void Tick()
-            {
-                Console.WriteLine(i++ % 2 == 0 ? "tick" : "tock");
+            public int tickCount;
 
-                if (2 < i)
+            [TimerTrigger("*/1 * * * * *")]
+            public void Tick()
+            {
+                Console.WriteLine(tickCount++ % 2 == 0 ? "tick" : "tock");
+
+                if (2 < tickCount)
                 {
                     cts.Cancel();
                 }
@@ -45,7 +47,7 @@ namespace CloudPad
                 await invoker.WaitAsync(cts.Token);
             }
 
-            Assert.AreEqual(3, query.i);
+            Assert.AreEqual(3, query.tickCount);
         }
     }
 }

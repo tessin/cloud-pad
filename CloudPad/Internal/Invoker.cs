@@ -42,7 +42,7 @@ namespace CloudPad.Internal
             }
         }
 
-        private async Task<Result> RunAsync(string linqPadScriptFileName, string methodName, string[] args, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task<Result> RunAsync(string linqPadScriptFileName, string[] args, CancellationToken cancellationToken = default(CancellationToken))
         {
             lock (this)
             {
@@ -132,7 +132,7 @@ namespace CloudPad.Internal
 
             var tcs = new TaskCompletionSource<Result>();
 
-            var envelope = Envelope.Create(linqPadScriptFileName, methodName, args);
+            var envelope = Envelope.Create(linqPadScriptFileName, args);
 
             if (!_outstanding.TryAdd(envelope.CorrelationId, tcs))
             {
@@ -172,8 +172,7 @@ namespace CloudPad.Internal
 
                 var result = await RunAsync(
                     linqPadScriptFileName,
-                    methodName,
-                    new[] { reqFn, resFn },
+                    new[] { "-" + Options.Method, methodName, "-" + Options.RequestFileName, reqFn, "-" + Options.ResponseFileName, resFn },
                     cancellationToken
                 );
 
@@ -205,8 +204,7 @@ namespace CloudPad.Internal
         {
             var result = await RunAsync(
                 linqPadScriptFileName,
-                methodName,
-                null,
+                new[] { "-" + Options.Method, methodName },
                 cancellationToken
             );
 

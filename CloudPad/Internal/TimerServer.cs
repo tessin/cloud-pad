@@ -73,7 +73,7 @@ namespace CloudPad.Internal
         public Task InvokeAsync(string functionName, CancellationToken cancellationToken)
         {
             var function = _functions.First(f => f.Function.Name == functionName);
-            return function.Function.InvokeAsync(cancellationToken);
+            return function.Function.InvokeAsync(cancellationToken: cancellationToken);
         }
 
         public void Dispose()

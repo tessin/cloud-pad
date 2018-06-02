@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,7 +66,7 @@ namespace CloudPad.Internal
                     catch (Exception ex)
                     {
 #if DEBUG
-                        Debugger.Launch();
+                        //Debugger.Launch();
                         Log.Debug.Append(
                             $"script compilation error '{envelope.LINQPadScriptFileName}': {ex.Message}",
                             correlationId: envelope.CorrelationId
@@ -96,12 +95,12 @@ namespace CloudPad.Internal
 
                     try
                     {
-                        result = await compilation.RunAsync(new[] { envelope.MethodName }.Concat(envelope.Args ?? new string[0]).ToArray());
+                        result = await compilation.RunAsync(envelope.Args);
                     }
                     catch (Exception ex)
                     {
 #if DEBUG
-                        Debugger.Launch();
+                        //Debugger.Launch();
                         Log.Debug.Append(
                             $"script invocation error '{envelope.LINQPadScriptFileName}': {ex.Message}",
                             correlationId: envelope.CorrelationId

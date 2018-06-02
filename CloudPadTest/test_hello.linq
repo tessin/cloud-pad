@@ -9,7 +9,7 @@
   <Namespace>System.Net.Http</Namespace>
 </Query>
 
-Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
+Task Main(string[] args) => Program.MainAsync(this, args);
 
 // Define other methods and classes here
 
