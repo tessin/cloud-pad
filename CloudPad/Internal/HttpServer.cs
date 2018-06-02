@@ -5,9 +5,25 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using CloudPad.Internal;
 
 namespace CloudPad
 {
+    class HttpFunction : HttpMessageHandler
+    {
+        public Function Function { get; }
+
+        public HttpFunction(Function function)
+        {
+            Function = function;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken cancellationToken)
+        {
+            return (Task<HttpResponseMessage>)Function.InvokeAsync(req: req, cancellationToken: cancellationToken);
+        }
+    }
+
     class HttpServer : IDisposable
     {
         private readonly HttpListener _httpListener;
@@ -81,6 +97,11 @@ namespace CloudPad
             }
         }
 
+        public void RegisterFunction(Function function)
+        {
+            Configuration.Routes.MapHttpRoute(function.Name, "api/" + function.Binding.Route, null, null, new HttpFunction(function));
+        }
+
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             // only when running locally as a LINQPad script and if there are HTTP bindings 
@@ -106,19 +127,20 @@ namespace CloudPad
                     }
 
                     HttpListenerContext context;
+
                     try
                     {
                         context = await _httpListener.GetContextAsync();
                     }
-                    catch (HttpListenerException)
+                    catch (HttpListenerException) when (cancellationToken.IsCancellationRequested)
                     {
-                        continue;
+                        return;
                     }
 
                     try
                     {
                         var req = await CreateRequestMessageAsync(context.Request);
-                        var res = await ProcessAsync(req, cancellationToken);
+                        var res = await InvokeAsync(req, cancellationToken);
                         await CreateResponseAsync(res, context.Response);
                     }
                     catch (Exception ex)
@@ -135,21 +157,21 @@ namespace CloudPad
             }
         }
 
-        public async Task<HttpResponseMessage> ProcessAsync(HttpRequestMessage req, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> InvokeAsync(HttpRequestMessage req, CancellationToken cancellationToken)
         {
             // when running locally as a LINQPad script and when running as a Azure function
 
             Configuration.EnsureInitialized();
 
-            Log.Debug.Append($"incoming request {req.Method} {req.RequestUri.AbsoluteUri}");
-
             var routeData = Configuration.Routes.GetRouteData(req);
             if (routeData == null)
             {
-                Log.Debug.Append($"route match not found");
+                Log.Debug.Append($"incoming request {req.Method} {req.RequestUri.AbsoluteUri} (no route match found!)");
 
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
+
+            Log.Debug.Append($"incoming request {req.Method} {req.RequestUri.AbsoluteUri} ({((HttpFunction)routeData.Route.Handler).Function.Name})");
 
             req.SetRequestContext(new System.Web.Http.Controllers.HttpRequestContext
             {
@@ -158,6 +180,7 @@ namespace CloudPad
             });
 
             var invoker = new HttpMessageInvoker(routeData.Route.Handler, false);
+
             return await invoker.SendAsync(req, cancellationToken);
         }
 

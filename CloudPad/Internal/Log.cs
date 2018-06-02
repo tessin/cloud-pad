@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace CloudPad
+namespace CloudPad.Internal
 {
-    internal static class Log
+    static class Log
     {
         private static readonly int _currentProcessId = Process.GetCurrentProcess().Id;
 

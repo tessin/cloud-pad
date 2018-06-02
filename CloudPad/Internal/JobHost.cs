@@ -16,59 +16,9 @@ using System.Web.Http;
 
 namespace CloudPad.Internal
 {
-    class CloudPadReflectionHttpMessageHandler : HttpMessageHandler
-    {
-        private readonly object _target;
-        private readonly MethodInfo _handler;
-        private readonly ParameterInfo[] _parameters;
-
-        public CloudPadReflectionHttpMessageHandler(object target, MethodInfo handler, ParameterInfo[] parameters)
-        {
-            _target = target;
-            _handler = handler;
-            _parameters = parameters;
-        }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            object returnValue;
-
-            switch (_parameters.Length)
-            {
-                case 1:
-                    returnValue = _handler.Invoke(_target, new object[] { request });
-                    break;
-
-                case 2:
-                    returnValue = _handler.Invoke(_target, new object[] { request, cancellationToken });
-                    break;
-
-                default:
-                    throw new InvalidOperationException();
-            }
-
-            var task = returnValue as Task<HttpResponseMessage>;
-            if (task != null)
-            {
-                return await task;
-            }
-
-            var res = returnValue as HttpResponseMessage;
-            if (res != null)
-            {
-                return res;
-            }
-
-            throw new InvalidOperationException();
-        }
-    }
-
     public class JobHost : IDisposable
     {
-        private readonly HttpServer _httpListener;
-        private readonly List<Timer> _timers = new List<Timer>();
         private readonly object _context;
-        private readonly string _methodName;
         private readonly string[] _args;
 
         public JobHost(object context, string[] args)
@@ -77,210 +27,151 @@ namespace CloudPad.Internal
             //            Debugger.Launch();
             //#endif
 
-            _httpListener = new HttpServer();
             _context = context;
-
-            // no args, default bindings
-            // any args, no default bindings
-
-            if (1 <= (args?.Length ?? 0))
-            {
-                _methodName = args[0];
-                _args = new ArraySegment<string>(args, 1, args.Length - 1).ToArray();
-            }
-            else
-            {
-                RegisterBindings(context);
-            }
+            _args = args;
         }
 
-        private List<Binding> RegisterBindings(object context)
+        public async Task<int> WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var bindings = new List<Binding>();
-
-            var methodNameSet = new HashSet<string>(StringComparer.Ordinal);
-
-            var methods = context.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var m in methods)
+            var args = new Args(Options.Method);
+            if (args.Parse(_args))
             {
-                var binding = Binding.GetBinding(m);
-                if (binding == null)
-                {
-                    continue;
-                }
+                Log.Trace.Append("cannot parse command line");
+                return 2;
+            }
 
-                if (methodNameSet.Add(m.Name))
+            var method = args.GetSingleOrDefault(Options.Method);
+
+            var index = new FunctionIndex(_context);
+
+            index.Initialize(method);
+
+            using (var cts = new CancellationScope(cancellationToken))
+            {
+                // todo: compilation
+
+                if (string.IsNullOrEmpty(method))
                 {
-                    if (!RegisterBinding(binding))
-                    {
-                        return null;
-                    }
+                    await RunAsync(index.Functions, cts.Token);
                 }
                 else
                 {
-                    throw new InvalidOperationException($"method '{m.Name}' is overloaded, you must give each method a unique name");
-                }
+                    // specific function invocation
 
-                bindings.Add(binding);
-            }
-
-            return bindings;
-        }
-
-        private bool RegisterBinding(Binding binding)
-        {
-            if (binding.Type == BindingType.HttpTrigger)
-            {
-                // check method signature
-
-                var parameters = binding.Method.GetParameters();
-                switch (parameters.Length)
-                {
-                    case 1:
-                    case 2:
-                        break;
-
-                    default:
-                        Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (rank)");
-                        return false;
-                }
-
-                if (!typeof(HttpRequestMessage).IsAssignableFrom(parameters[0].ParameterType))
-                {
-                    Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (parameter #1 type)");
-                    return false;
-                }
-
-                if (1 < parameters.Length)
-                {
-                    if (!typeof(CancellationToken).IsAssignableFrom(parameters[1].ParameterType))
+                    var function = index.Functions.FirstOrDefault(x => x.Name == method);
+                    if (function == null)
                     {
-                        Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (parameter #2 type)");
-                        return false;
+                        Log.Trace.Append($"function '{method}' not found");
+                        return 1;
+                    }
+
+                    switch (function.Binding.Type)
+                    {
+                        case BindingType.HttpTrigger:
+                            {
+                                var reqFileName = args.GetSingleOrDefault(Options.RequestFileName);
+                                if (reqFileName == null)
+                                {
+                                    Log.Trace.Append($"HTTP function '{method}' requires -req <request-file-name> option");
+                                    return 1;
+                                }
+
+                                var resFileName = args.GetSingleOrDefault(Options.ResponseFileName);
+                                if (resFileName == null)
+                                {
+                                    Log.Trace.Append($"HTTP function '{method}' requires -res <response-file-name> option");
+                                    return 1;
+                                }
+
+                                using (var httpServer = new HttpServer())
+                                {
+                                    httpServer.RegisterFunction(function);
+
+                                    // invoke HTTP function
+
+                                    HttpRequestMessage req;
+
+                                    using (var inputStream = File.OpenRead(reqFileName))
+                                    {
+                                        req = HttpMessage.DeserializeRequest(inputStream);
+                                    }
+
+                                    var res = await httpServer.InvokeAsync(req, cancellationToken);
+
+                                    using (var outputStream = File.Create(resFileName))
+                                    {
+                                        await HttpMessage.SerializeResponse(res, outputStream);
+                                    }
+                                }
+                                break;
+                            }
+
+                        case BindingType.TimerTrigger:
+                            {
+                                using (var timerServer = new TimerServer())
+                                {
+                                    timerServer.RegisterFunction(function);
+
+                                    // invoke timer function
+
+                                    await timerServer.InvokeAsync(method, cancellationToken);
+                                }
+                                break;
+                            }
+
+                        default:
+                            {
+                                Log.Trace.Append($"function '{method}' binding '{function.Binding.Type}' is unsupported");
+                                return 1;
+                            }
                     }
                 }
-
-                if (!(typeof(Task<HttpResponseMessage>).IsAssignableFrom(binding.Method.ReturnType) ||
-                    typeof(HttpResponseMessage).IsAssignableFrom(binding.Method.ReturnType)))
-                {
-                    Log.Trace.Append($"method {binding.Method.Name} does not match HTTP handler signature (return type)");
-                    return false;
-                }
-
-                // todo: create delegate
-
-                _httpListener.Configuration.Routes.MapHttpRoute(binding.Route, "api/" + binding.Route, null, null, new CloudPadReflectionHttpMessageHandler(_context, binding.Method, parameters));
-                return true;
             }
 
-            if (binding.Type == BindingType.TimerTrigger)
-            {
-                var schedule = CrontabSchedule.TryParse(binding.CronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = HasSeconds(binding.CronExpression) });
-                if (schedule != null)
-                {
-                    _timers.Add(new Timer(_context, binding.Method, schedule));
-                    return true;
-                }
-                return false;
-            }
-
-            return false;
+            return 0;
         }
 
-        private static bool HasSeconds(string cronExpression)
+        private async Task RunAsync(IEnumerable<Function> functions, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return cronExpression.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length != 5;
-        }
-
-        public async Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (string.IsNullOrEmpty(_methodName))
+            using (var httpServer = new HttpServer())
             {
-                await RunAsync(cancellationToken);
-            }
-            else
-            {
-                if (_methodName == "-compile")
+                using (var timerServer = new TimerServer())
                 {
-                    await CompileAsync();
-                    return;
-                }
-
-                var binding = Binding.GetBinding(_context.GetType(), _methodName);
-                if (binding == null)
-                {
-                    throw new InvalidOperationException(FormattableString.Invariant($"method {_methodName} does not have binding"));
-                }
-
-                RegisterBinding(binding);
-
-                switch (binding.Type)
-                {
-                    case BindingType.HttpTrigger:
+                    foreach (var function in functions)
+                    {
+                        switch (function.Binding.Type)
                         {
-                            var reqFileName = _args[0];
-                            var resFileName = _args[1];
-
-                            HttpRequestMessage req;
-
-                            using (var inputStream = File.OpenRead(reqFileName))
-                            {
-                                req = HttpMessage.DeserializeRequest(inputStream);
-                            }
-
-                            var res = await _httpListener.ProcessAsync(req, cancellationToken);
-
-                            using (var outputStream = File.Create(resFileName))
-                            {
-                                await HttpMessage.SerializeResponse(res, outputStream);
-                            }
+                            case BindingType.HttpTrigger:
+                                {
+                                    httpServer.RegisterFunction(function);
+                                    break;
+                                }
+                            case BindingType.TimerTrigger:
+                                {
+                                    timerServer.RegisterFunction(function);
+                                    break;
+                                }
+                            default:
+                                throw new InvalidOperationException($"binding type: {function.Binding.Type}");
                         }
-                        break;
+                    }
 
-                    case BindingType.TimerTrigger:
-                        var returnValue = binding.Method.Invoke(_context, null); // parameterless  
-                        if (returnValue is Task)
-                        {
-                            await (Task)returnValue;
-                        }
-                        return;
+                    var httpServerTask = httpServer.RunAsync(cancellationToken);
+                    var timerServerTask = timerServer.RunAsync(cancellationToken);
 
-                    default:
-                        throw new NotImplementedException();
+                    var tasks = new List<Task>();
+
+                    tasks.Add(httpServerTask);
+                    tasks.Add(timerServerTask);
+
+                    while (0 < tasks.Count)
+                    {
+                        var task = await Task.WhenAny(tasks);
+                        await task; // unwrap
+                        tasks.Remove(task);
+                    }
                 }
             }
-        }
-
-        private async Task RunAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var cts = new CancellationTokenSource();
-
-            var cancellationTokenRegistration = default(CancellationTokenRegistration);
-
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationTokenRegistration = cancellationToken.Register(() => cts.Cancel());
-            }
-
-            // subscribe to LINQPad script cancellation
-            var utilType = Type.GetType("LINQPad.Util, LINQPad", false);
-            if (utilType != null)
-            {
-                utilType.GetEvent("Cleanup").AddEventHandler(null, new EventHandler((sender, e) => cts.Cancel()));
-            }
-
-            var tasks = new List<Task>();
-
-            foreach (var timer in _timers)
-            {
-                tasks.Add(timer.RunAsync(cts.Token));
-            }
-
-            tasks.Add(_httpListener.RunAsync(cts.Token));
-
-            await Task.WhenAll(tasks);
-
-            cancellationTokenRegistration.Dispose();
         }
 
         private async Task CompileAsync()
@@ -437,7 +328,7 @@ namespace CloudPad.Internal
 
         public void Dispose()
         {
-            _httpListener.Dispose();
+            // no op
         }
     }
 }
