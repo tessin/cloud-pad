@@ -1,25 +1,25 @@
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace CloudPadFunctionHost
+namespace CloudPad
 {
-    public static class HttpFunction
+    public static class HttpFunctionEntryPoint
     {
         public static Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, null, Route = "")]
             HttpRequestMessage req,
             System.Threading.CancellationToken cancellationToken,
             ExecutionContext executionContext,
             TraceWriter log
         )
         {
-            using (new TraceWriterListener(log))
-            {
-                return FunctionExecutor.Current.RunHttpTriggerAsync(executionContext, req, cancellationToken);
-            }
+            return FunctionExecutor.Current.RunHttpTriggerAsync(
+                executionContext,
+                req,
+                new FunctionTraceWriter(log),
+                cancellationToken
+            );
         }
     }
 }

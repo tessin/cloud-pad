@@ -1,4 +1,5 @@
-﻿using CloudPad.Internal;
+﻿using CloudPad;
+using CloudPad.Internal;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
@@ -7,7 +8,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace CloudPadFunctionHost
+namespace CloudPad
 {
     class FunctionExecutor
     {
@@ -35,7 +36,12 @@ namespace CloudPadFunctionHost
             return details;
         }
 
-        public Task<HttpResponseMessage> RunHttpTriggerAsync(ExecutionContext executionContext, HttpRequestMessage req, System.Threading.CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> RunHttpTriggerAsync(
+            ExecutionContext executionContext,
+            HttpRequestMessage req,
+            ITraceWriter log,
+            System.Threading.CancellationToken cancellationToken
+        )
         {
             var details = Resolve(executionContext);
 
@@ -43,17 +49,23 @@ namespace CloudPadFunctionHost
                 details.LINQPadScriptFileName,
                 details.LINQPadScriptMethodName,
                 req,
+                log,
                 cancellationToken
             );
         }
 
-        public Task RunTimerTriggerAsync(ExecutionContext executionContext, System.Threading.CancellationToken cancellationToken)
+        public Task RunTimerTriggerAsync(
+            ExecutionContext executionContext,
+            ITraceWriter log,
+            System.Threading.CancellationToken cancellationToken
+        )
         {
             var details = Resolve(executionContext);
 
             return _invoker.RunTimerTriggerAsync(
                 details.LINQPadScriptFileName,
                 details.LINQPadScriptMethodName,
+                log,
                 cancellationToken
             );
         }

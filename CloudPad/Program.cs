@@ -1,5 +1,5 @@
 ﻿using CloudPad.Internal;
-using System.Diagnostics;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -11,11 +11,19 @@ namespace CloudPad
     {
         public static async Task MainAsync(object context, string[] args)
         {
-            Trace.Listeners.Add(new ConsoleTraceListener());
+            int exitCode;
 
-            using (var host = new JobHost(context, args))
+            using (var host = new JobHost(context, args ?? new string[0]))
             {
-                await host.WaitAsync();
+                exitCode = await host.WaitAsync();
+            }
+
+            if (exitCode != 0)
+            {
+                // this will bring down the LPRun hosting process 
+                // when multiples queries share the same process 
+
+                Environment.Exit(exitCode);
             }
         }
     }

@@ -12,6 +12,8 @@
     <RepositoryUrl></RepositoryUrl>
     <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
     <PackageTags>LINQPad Azure</PackageTags>
+
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <ItemGroup>

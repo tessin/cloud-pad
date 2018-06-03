@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "azure-functions-core-tools": "^1.0.12"
+  }
+}

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace CloudPadFunctionHost
+namespace CloudPad
 {
     class FunctionExecutorDetails
     {

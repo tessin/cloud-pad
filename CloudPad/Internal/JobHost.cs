@@ -20,28 +20,39 @@ namespace CloudPad.Internal
 
         public JobHost(object context, string[] args)
         {
-            //#if DEBUG
-            //            Debugger.Launch();
-            //#endif
-
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
             _context = context;
             _args = args;
         }
 
         public async Task<int> WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var args = new Args(Options.Method, Options.RequestFileName, Options.ResponseFileName, Options.Compile + ":boolean", Options.OutputDirectory, Options.Publish, Options.Unpublish);
+            var args = new Args(Options.Script, Options.Method, Options.RequestFileName, Options.ResponseFileName, Options.Compile + ":boolean", Options.OutputDirectory, Options.Debug + ":boolean", Options.Publish, Options.Unpublish);
             if (!args.Parse(_args))
             {
                 Log.Trace.Append("cannot parse command line: " + string.Join(" ", _args));
                 return 2;
             }
 
+            var script = args.GetSingleOrDefault(Options.Script);
             var method = args.GetSingleOrDefault(Options.Method);
             var compile = args.GetSingleOrDefault<bool>(Options.Compile);
             var outputDirectory = args.GetSingleOrDefault(Options.OutputDirectory);
+            var debug = args.GetSingleOrDefault<bool>(Options.Debug);
             var publish = args.GetSingleOrDefault(Options.Publish);
             var unpublish = args.GetSingleOrDefault(Options.Unpublish);
+
+            if (debug)
+            {
+                Debugger.Launch();
+            }
 
             if (compile && unpublish != null)
             {
@@ -63,7 +74,20 @@ namespace CloudPad.Internal
             {
                 if (compile || publish != null)
                 {
-                    await CompileAsync(index.Functions, outputDirectory, publish);
+                    if (script == null)
+                    {
+                        script = LINQPad.GetCurrentQueryPath();
+                    }
+
+                    if (script == null)
+                    {
+                        Console.Error.WriteLine($"'{Options.Compile}' depends on '{Options.Script}' when running outside of LINQPad context");
+                        return 1;
+                    }
+
+                    script = Path.GetFullPath(script); // fully qualified
+
+                    await CompileAsync(script, index.Functions, outputDirectory, publish);
                 }
                 else
                 {
@@ -195,6 +219,7 @@ namespace CloudPad.Internal
         }
 
         private async Task CompileAsync(
+            string scriptFullPath,
             IEnumerable<Function> functions,
             string outputDirectory = null,
             string publish = null
@@ -202,12 +227,10 @@ namespace CloudPad.Internal
         {
             // todo: packaging...
 
-            var linqPadScriptFileName = LINQPad.GetCurrentQueryPath() ?? "test.linq";
-
             var assembly = GetType().Assembly;
             var assemblyName = assembly.GetName();
 
-            var zipFileName = Path.ChangeExtension(Path.GetFileName(linqPadScriptFileName), "zip");
+            var zipFileName = Path.ChangeExtension(Path.GetFileName(scriptFullPath), "zip");
 
             using (var fs = File.Create(zipFileName))
             {
@@ -217,49 +240,102 @@ namespace CloudPad.Internal
                 // - fix assembly references
                 // - fix connection string
 
-                var baseName = Path.GetFileNameWithoutExtension(linqPadScriptFileName);
-                var fn = "scripts/" + baseName + "/" + Path.GetFileName(linqPadScriptFileName);
+                var scriptDirectory = Path.GetDirectoryName(scriptFullPath);
+                var scriptFileName = Path.GetFileName(scriptFullPath);
+                var scriptBaseName = Path.GetFileNameWithoutExtension(scriptFullPath);
 
-                zip.CreateEntryFromFile(linqPadScriptFileName, fn);
+                var baseName = "scripts" + "/" + scriptBaseName;
+
+                // ================================
+
+                var f = new LINQPadFile();
+                f.Load(scriptFullPath);
+                foreach (var el in f.metadata_.Elements("Reference"))
+                {
+                    var value = el.Value;
+                    if (value.StartsWith(@"<RuntimeDirectory>\"))
+                    {
+                        continue;
+                    }
+
+                    // locate DLL
+
+                    string dllFullPath = null;
+
+                    if (File.Exists(value))
+                    {
+                        dllFullPath = value;
+                    }
+                    else
+                    {
+                        var rel = (string)el.Attribute("Relative"); // todo: what happens if rel is null?
+                        var abs = Path.GetFullPath(Path.Combine(scriptDirectory, rel));
+
+                        if (File.Exists(abs))
+                        {
+                            dllFullPath = abs;
+                        }
+                    }
+
+                    if (dllFullPath == null)
+                    {
+                        FormattableString message = $"compiler error: cannot resolve LINQPad script '{scriptFullPath}' assembly reference '{value}'";
+                        Log.Trace.Append(message);
+                        throw new CloudPadException(FormattableString.Invariant(message));
+                    }
+
+                    var dllFileName = Path.GetFileName(dllFullPath);
+
+                    el.Value = Path.Combine(@"D:\home\site\wwwroot\scripts", scriptBaseName, "bin", dllFileName); // rewrite
+                    el.SetAttributeValue("Relative", Path.Combine("bin", dllFileName));
+
+                    zip.CreateEntryFromFile(dllFullPath, baseName + "/" + "bin" + "/" + dllFileName);
+
+                    var pdbFullPath = Path.ChangeExtension(dllFullPath, "pdb");
+
+                    if (File.Exists(pdbFullPath))
+                    {
+                        zip.CreateEntryFromFile(pdbFullPath, baseName + "/" + "bin" + "/" + Path.GetFileName(pdbFullPath));
+                    }
+                }
+
+                zip.CreateEntryFromLINQPadFile(f, baseName + "/" + scriptFileName);
+
+                // ================================
 
                 foreach (var function in functions)
                 {
                     var functionJson = new JObject();
 
                     functionJson["generatedBy"] = assemblyName.Name + "-" + assemblyName.Version;
+
+                    // "attributes" is used by the Azure Web Jobs SDK 
+                    // to bind using metadata and takes precedence 
+                    // over "config". we do not want this.
+                    functionJson["configurationSource"] = "config";
+
                     functionJson["bindings"] = JToken.FromObject(new[] { function.Binding });
                     functionJson["disabled"] = false;
-                    functionJson["scriptFile"] = "../bin/CloudPadFunctionHost.dll";
+                    functionJson["scriptFile"] = "../bin/CloudPad.FunctionApp.dll";
 
                     switch (function.Binding.Type)
                     {
                         case BindingType.HttpTrigger:
-                            functionJson["entryPoint"] = "CloudPadFunctionHost.HttpFunction.Run";
+                            functionJson["entryPoint"] = "CloudPad.HttpFunctionEntryPoint.Run";
                             break;
 
                         case BindingType.TimerTrigger:
-                            functionJson["entryPoint"] = "CloudPadFunctionHost.TimerFunction.Run";
+                            functionJson["entryPoint"] = "CloudPad.TimerFunctionEntryPoint.Run";
                             break;
 
                         default:
                             throw new NotSupportedException("trigger binding: " + function.Binding.Type);
                     }
 
-                    functionJson["linqPadScriptFileName"] = "../" + fn;
+                    functionJson["linqPadScriptFileName"] = "../scripts/" + scriptBaseName + "/" + scriptFileName; // relative 'function.json'
                     functionJson["linqPadScriptMethodName"] = function.Name;
 
-                    var entry = zip.CreateEntry(baseName + "_" + function.Name + "/function.json");
-
-                    using (var entryStream = entry.Open())
-                    {
-                        var textWriter = new StreamWriter(entryStream);
-                        var jsonSerializer = new JsonSerializer
-                        {
-                            Formatting = Formatting.Indented
-                        };
-                        jsonSerializer.Serialize(new JsonTextWriter(textWriter), functionJson);
-                        textWriter.Flush();
-                    }
+                    zip.CreateEntryFromJson(functionJson, scriptBaseName + "_" + function.Name + "/function.json");
                 }
 
                 zip.Dispose();

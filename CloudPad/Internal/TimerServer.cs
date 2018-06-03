@@ -46,9 +46,7 @@ namespace CloudPad.Internal
         {
             var cronExpression = function.Binding.CronExpression;
 
-            var hasSeconds = cronExpression.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length != 5;
-
-            var schedule = NCrontab.CrontabSchedule.TryParse(cronExpression, new NCrontab.CrontabSchedule.ParseOptions { IncludingSeconds = hasSeconds });
+            var schedule = NCrontab.CrontabSchedule.TryParse(cronExpression, new NCrontab.CrontabSchedule.ParseOptions { IncludingSeconds = true }); // Azure function runtime V1 does not support anything else
             if (schedule == null)
             {
                 throw new ArgumentException($"cannot parse function '{function.Name}' CRON expression", nameof(function));

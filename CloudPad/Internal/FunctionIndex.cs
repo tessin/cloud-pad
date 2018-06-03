@@ -132,8 +132,8 @@ namespace CloudPad.Internal
     public class FunctionIndex
     {
         private readonly object _context;
-        private List<Function> _functions;
-        public IEnumerable<Function> Functions => _functions;
+
+        public List<Function> Functions { get; } = new List<Function>();
 
         public FunctionIndex(object context)
         {
@@ -146,7 +146,7 @@ namespace CloudPad.Internal
 
         public void Initialize(string name = null)
         {
-            var functions = new List<Function>();
+            if (0 < Functions.Count) return;
 
             if (name == null)
             {
@@ -170,7 +170,7 @@ namespace CloudPad.Internal
 
                         function.CheckSignature();
 
-                        functions.Add(function);
+                        Functions.Add(function);
                     }
                 }
             }
@@ -180,7 +180,7 @@ namespace CloudPad.Internal
                 // gone through the other path at least once before
                 // allthough not necessarily within the same process
 
-                MethodInfo method;
+                MethodInfo method = null;
 
                 try
                 {
@@ -194,14 +194,17 @@ namespace CloudPad.Internal
                     throw new InvalidOperationException($"overloading is not supported. (you cannot have two methods with the same name '{name}')", ex);
                 }
 
+                if (method == null)
+                {
+                    throw new MissingMethodException(_context.GetType().FullName, name);
+                }
+
                 var binding = Binding.GetBinding(method);
                 if (binding != null)
                 {
-                    functions.Add(new Function(_context, method, binding));
+                    Functions.Add(new Function(_context, method, binding));
                 }
             }
-
-            _functions = functions;
         }
     }
 }

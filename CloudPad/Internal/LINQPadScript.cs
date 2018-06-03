@@ -22,6 +22,8 @@ namespace CloudPad.Internal
 
     class LINQPadFile
     {
+        // this is the LINQPad script file loader from LINQPad.exe in most of its original form
+
         readonly Regex _validQueryHeader = new Regex("(?i)^\\s*<query");
 
         public XElement metadata_;

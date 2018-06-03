@@ -75,7 +75,19 @@ namespace CloudPad.Internal
                     else
                     {
                         processStartInfo.FileName = @"C:\Program Files (x86)\LINQPad5\LPRun.exe";
-                        processStartInfo.WorkingDirectory = Environment.CurrentDirectory;
+
+                        // depends on hosting environment, test or function app
+                        var currentDirectory = Environment.CurrentDirectory;
+                        var binDirectory = Path.Combine(currentDirectory, "bin");
+
+                        if (Directory.Exists(binDirectory))
+                        {
+                            processStartInfo.WorkingDirectory = binDirectory;
+                        }
+                        else
+                        {
+                            processStartInfo.WorkingDirectory = currentDirectory;
+                        }
                     }
 
                     {
@@ -105,6 +117,8 @@ namespace CloudPad.Internal
                     processStartInfo.RedirectStandardError = true;
 #endif
                     var childProcess = Process.Start(processStartInfo);
+
+                    childProcess.EnableRaisingEvents = true;
 
                     Log.Debug.Append($"LINQPad proxy started");
 #if DEBUG
@@ -143,7 +157,13 @@ namespace CloudPad.Internal
 
             _serverPipe.OutPipe.Send(envelope);
 
-            using (cancellationToken.Register(() => tcs.TrySetCanceled()))
+            using (cancellationToken.Register(() =>
+            {
+                if (_outstanding.TryRemove(envelope.CorrelationId, out var tcs2))
+                {
+                    tcs2.TrySetCanceled();
+                }
+            }))
             {
                 return await tcs.Task;
             }
@@ -153,6 +173,7 @@ namespace CloudPad.Internal
             string linqPadScriptFileName,
             string methodName,
             HttpRequestMessage req,
+            ITraceWriter log,
             CancellationToken cancellationToken = default(CancellationToken)
             )
         {
@@ -180,7 +201,18 @@ namespace CloudPad.Internal
 
                 using (var inputStream = File.OpenRead(resFn))
                 {
-                    return HttpMessage.DeserializeResponse(inputStream);
+                    var res = HttpMessage.DeserializeResponse(inputStream);
+
+                    // if we do not associate the response with the original request
+                    // the Azure Web Jobs SDK will ignore our actual response message
+                    // and simply return a generic HTTP 200 OK response message, evil!
+
+                    // see https://github.com/Azure/azure-functions-host/blob/v1.x/src/WebJobs.Script.WebHost/WebScriptHostManager.cs#L211-L217
+                    // see https://github.com/Azure/azure-functions-host/blob/v1.x/src/WebJobs.Script/ScriptConstants.cs#L11
+
+                    req.Properties.Add("MS_AzureFunctionsHttpResponse", res);
+
+                    return res;
                 }
             }
             catch (Exception ex)
@@ -199,6 +231,7 @@ namespace CloudPad.Internal
         public async Task RunTimerTriggerAsync(
             string linqPadScriptFileName,
             string methodName,
+            ITraceWriter log,
             CancellationToken cancellationToken = default(CancellationToken)
             )
         {

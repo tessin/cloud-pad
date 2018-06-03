@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudPad", "CloudPad\CloudPad.csproj", "{492AA261-6262-4E62-B339-A84E38D6CBA9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudPadFunctionHost", "CloudPadFunctionHost\CloudPadFunctionHost.csproj", "{AAE65CE7-83DF-4EBE-B6A6-F564F0A82115}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{85F72A5E-260C-4851-82F1-49DB67857EC5}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -14,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudPadTest", "CloudPadTest\CloudPadTest.csproj", "{735E592C-DCC4-4A18-8278-2880A5E91BF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudPadTest", "CloudPadTest\CloudPadTest.csproj", "{735E592C-DCC4-4A18-8278-2880A5E91BF6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudPad.FunctionApp", "CloudPad.FunctionApp\CloudPad.FunctionApp.csproj", "{152D0AA6-B47B-4A85-A040-8037C3890635}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,14 +26,14 @@ Global
 		{492AA261-6262-4E62-B339-A84E38D6CBA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{492AA261-6262-4E62-B339-A84E38D6CBA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{492AA261-6262-4E62-B339-A84E38D6CBA9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AAE65CE7-83DF-4EBE-B6A6-F564F0A82115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AAE65CE7-83DF-4EBE-B6A6-F564F0A82115}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AAE65CE7-83DF-4EBE-B6A6-F564F0A82115}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AAE65CE7-83DF-4EBE-B6A6-F564F0A82115}.Release|Any CPU.Build.0 = Release|Any CPU
 		{735E592C-DCC4-4A18-8278-2880A5E91BF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{735E592C-DCC4-4A18-8278-2880A5E91BF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{735E592C-DCC4-4A18-8278-2880A5E91BF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{735E592C-DCC4-4A18-8278-2880A5E91BF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{152D0AA6-B47B-4A85-A040-8037C3890635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{152D0AA6-B47B-4A85-A040-8037C3890635}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{152D0AA6-B47B-4A85-A040-8037C3890635}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{152D0AA6-B47B-4A85-A040-8037C3890635}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

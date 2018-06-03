@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net461</TargetFramework>
-        <RootNamespace>CloudPadFunctionHost</RootNamespace>
-        <AssemblyName>CloudPadFunctionHost</AssemblyName>
+        <RootNamespace>CloudPad</RootNamespace>
+        <AssemblyName>CloudPad.FunctionApp</AssemblyName>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.13" />
@@ -25,7 +25,5 @@
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </None>
     </ItemGroup>
-    <Target Name="PostBuild" AfterTargets="_GenerateFunctionsPostBuild">
-        <Exec Command="&quot;C:\Program Files (x86)\LINQPad5\LPRun.exe&quot; $(SolutionDir)\examples\hello_http.linq -compile -out $(TargetDir)" />
-    </Target>
+    <Import Project="post-build.targets" />
 </Project>

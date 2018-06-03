@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CloudPad
 {
+    [Serializable] // todo: remote excetpion
     public class CloudPadException : Exception
     {
         public string RemoteTypeFullName { get; }
