@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace CloudPad.Internal
 
     class LINQPadFile
     {
-        // this is the LINQPad script file loader from LINQPad.exe in most of its original form
+        // see LINQPad.ObjectModel.Query.Populate
 
         readonly Regex _validQueryHeader = new Regex("(?i)^\\s*<query");
 
@@ -87,6 +88,47 @@ namespace CloudPad.Internal
                 result = true;
             }
             return result;
+        }
+
+        public void PrepareConnection()
+        {
+            foreach (var conn in metadata_.Elements("Connection"))
+            {
+                var password = (string)conn.Element("Password");
+
+                if (string.IsNullOrEmpty(password))
+                {
+                    continue;
+                }
+
+                var password2 = LINQPad.Decrypt(password);
+
+                if (string.IsNullOrEmpty(password2))
+                {
+                    throw new CloudPadException("connection password cannot be read by this user. it's likely that the file has been copied between different computers/users. you must fix the connection manually before you can deploy the script again.");
+                }
+
+                var driverData = conn.Element("DriverData");
+                if (driverData == null)
+                {
+                    conn.Add(driverData = new XElement("DriverData"));
+                }
+
+                var extraCxOptions = driverData.Element("ExtraCxOptions");
+                if (extraCxOptions == null)
+                {
+                    driverData.Add(extraCxOptions = new XElement("ExtraCxOptions"));
+                }
+
+                var cb = new SqlConnectionStringBuilder(extraCxOptions.Value);
+
+                if (!cb.IntegratedSecurity)
+                {
+                    cb.Password = password2;
+                }
+
+                extraCxOptions.Value = cb.ToString();
+            }
         }
 
         public void Save(string fn)

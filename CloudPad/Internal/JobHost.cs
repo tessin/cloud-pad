@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -236,10 +237,6 @@ namespace CloudPad.Internal
             {
                 var zip = new ZipArchive(fs, ZipArchiveMode.Create);
 
-                // todo: wash LINQPad script 
-                // - fix assembly references
-                // - fix connection string
-
                 var scriptDirectory = Path.GetDirectoryName(scriptFullPath);
                 var scriptFileName = Path.GetFileName(scriptFullPath);
                 var scriptBaseName = Path.GetFileNameWithoutExtension(scriptFullPath);
@@ -297,7 +294,63 @@ namespace CloudPad.Internal
                     {
                         zip.CreateEntryFromFile(pdbFullPath, baseName + "/" + "bin" + "/" + Path.GetFileName(pdbFullPath));
                     }
+
+                    // ================================
+
+                    var attachmentsPath = ProbePath($"{scriptBaseName}.files.txt", new[] { scriptDirectory, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+                    if (attachmentsPath != null)
+                    {
+                        foreach (var line in File.ReadAllLines(attachmentsPath))
+                        {
+                            var line2 = line.Trim();
+                            if (string.IsNullOrEmpty(line2))
+                            {
+                                continue;
+                            }
+                            var attachmentPath = ProbePath(line2, new[] { scriptDirectory, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+                            if (attachmentPath == null)
+                            {
+                                Console.Error.WriteLine($"'{line2}' script attachment not found");
+                                if (Environment.UserInteractive)
+                                {
+                                    Console.ReadLine();
+                                }
+                                Environment.Exit(1);
+                                return;
+                            }
+                            zip.CreateEntryFromFile(attachmentPath, baseName + "/" + Path.GetFileName(attachmentPath));
+                        }
+                    }
+
+                    var attachmentsPath2 = ProbePath("files.txt", new[] { scriptDirectory, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+                    if (attachmentsPath2 != null)
+                    {
+                        foreach (var line in File.ReadAllLines(attachmentsPath))
+                        {
+                            var line2 = line.Trim();
+                            if (string.IsNullOrEmpty(line2))
+                            {
+                                continue;
+                            }
+                            var attachmentPath = ProbePath(line2, new[] { scriptDirectory, Environment.CurrentDirectory, AppDomain.CurrentDomain.BaseDirectory });
+                            if (attachmentPath == null)
+                            {
+                                Console.Error.WriteLine($"'{line2}' global attachment not found");
+                                if (Environment.UserInteractive)
+                                {
+                                    Console.ReadLine();
+                                }
+                                Environment.Exit(1);
+                                return;
+                            }
+                            zip.CreateEntryFromFile(attachmentPath, baseName + "/" + Path.GetFileName(attachmentPath));
+                        }
+                    }
+
+                    // ================================
                 }
+
+                f.PrepareConnection();
 
                 zip.CreateEntryFromLINQPadFile(f, baseName + "/" + scriptFileName);
 
@@ -392,6 +445,19 @@ namespace CloudPad.Internal
                     }
                 }
             }
+        }
+
+        static string ProbePath(string fn, string[] paths)
+        {
+            foreach (var path in paths)
+            {
+                var fn2 = Path.Combine(path, fn);
+                if (File.Exists(fn2))
+                {
+                    return fn2;
+                }
+            }
+            return null;
         }
 
         public void Dispose()

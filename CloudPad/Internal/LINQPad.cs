@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CloudPad.Internal
 {
@@ -41,6 +40,33 @@ namespace CloudPad.Internal
                 return utilType.GetProperty("CurrentQueryPath")?.GetValue(null) as string;
             }
             return null;
+        }
+
+        public static string Decrypt(string s)
+        {
+            // see LINQPad.Repository.Decrypt
+
+            if (string.IsNullOrEmpty(s))
+            {
+                return "";
+            }
+
+            var name = GetUtilType()?.Assembly?.GetName();
+            if (name == null)
+            {
+                name = AssemblyName.GetAssemblyName(@"C:\Program Files (x86)\LINQPad5\LINQPad.exe");
+            }
+
+            try
+            {
+                return Encoding.UTF8.GetString(
+                    ProtectedData.Unprotect(Convert.FromBase64String(s), name.GetPublicKey(), DataProtectionScope.CurrentUser)
+                );
+            }
+            catch
+            {
+                return "";
+            }
         }
     }
 }

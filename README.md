@@ -9,7 +9,7 @@ Add reference to NuGet package `CloudPad` (_if you don't have a LINQPad premium 
 There's minimal setup and you cannot just take any LINQPad script and run it as an Azure function you need to have this bootstrapping snippet in your LINQPad program.
 
 ```cs
-Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
+Task Main(string[] args) => Program.MainAsync(this, args);
 ```
 
 Any non-static method defined in the LINQPad script is _potentially_ an Azure function that can be invoked. As long as there is a supported binding, it should just work!
@@ -20,22 +20,40 @@ Supported bindings are:
 * Timer
 
 ```cs
-Task Main(string[] args) => CloudPad.CloudPad.MainAsync(this, args);
+Task Main(string[] args) => Program.MainAsync(this, args);
 
 // Define other methods and classes here
 
-[HttpTrigger(Route = "hello")]
-HttpResponseMessage Hello(HttpRequestMessage req)
+[HttpTrigger(Route = "test")]
+HttpResponseMessage TestHttp(HttpRequestMessage req)
 {
-  var res = req.CreateResponse();
-  res.Content = new StringContent(
-    "world", Encoding.UTF8, "text/plain"
-  );
-  return res;
+	var res = req.CreateResponse();
+	res.Content = new StringContent("hello world", Encoding.UTF8, "text/plain");
+	return res;
+}
+
+[HttpTrigger(Route = "test-async")]
+async Task<HttpResponseMessage> TestHttpAsync(HttpRequestMessage req, CancellationToken cancellationToken)
+{
+	await Task.Delay(100);
+
+	var res = req.CreateResponse();
+	res.Content = new StringContent("hello world asynchronous", Encoding.UTF8, "text/plain");
+	return res;
+}
+
+[TimerTrigger("0 */5 * * * *")]
+async Task TestTimerAsync(CancellationToken cancellationToken)
+{
+	await Task.Delay(100);
 }
 ```
 
 The behavior should be identical to an Azure Function. If the behavior is different it is most likely a bug in `CloudPad`. Please open an issue to discuss the matter.
+
+## Deployment
+
+
 
 ## FAQ/Known issues
 
