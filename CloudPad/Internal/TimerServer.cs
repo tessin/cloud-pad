@@ -64,8 +64,11 @@ namespace CloudPad.Internal
                 tasks.Add(function.RunAsync(cancellationToken));
             }
 
-            var task = await Task.WhenAny(tasks);
-            await task; // unwrap
+            if (0 < tasks.Count)
+            {
+                var task = await Task.WhenAny(tasks);
+                await task; // unwrap
+            }
         }
 
         public Task InvokeAsync(string functionName, CancellationToken cancellationToken)
