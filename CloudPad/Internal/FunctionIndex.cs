@@ -144,6 +144,11 @@ namespace CloudPad.Internal
             _context = context;
         }
 
+        private static bool HasTriggerBindingAttribute(MethodInfo method)
+        {
+            return method.GetCustomAttributes().Any(attr => attr is HttpTriggerAttribute || attr is TimerTriggerAttribute);
+        }
+
         public void Initialize(string name = null)
         {
             if (0 < Functions.Count) return;
@@ -154,7 +159,7 @@ namespace CloudPad.Internal
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance
                 );
 
-                foreach (var g in methods.GroupBy(x => x.Name))
+                foreach (var g in methods.Where(HasTriggerBindingAttribute).GroupBy(x => x.Name))
                 {
                     if (1 < g.Count())
                     {
