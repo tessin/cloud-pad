@@ -32,7 +32,7 @@ HttpResponseMessage TestHttp(HttpRequestMessage req)
 	return res;
 }
 
-[HttpTrigger(Route = "test-async")]
+[HttpTrigger(AuthorizationLevel.Anonymous, Route = "test-async")]
 async Task<HttpResponseMessage> TestHttpAsync(HttpRequestMessage req, CancellationToken cancellationToken)
 {
 	await Task.Delay(100);
@@ -42,7 +42,7 @@ async Task<HttpResponseMessage> TestHttpAsync(HttpRequestMessage req, Cancellati
 	return res;
 }
 
-[TimerTrigger("0 */5 * * * *")]
+[TimerTrigger("0 */5 * * * *")] // every 5 minutes
 async Task TestTimerAsync(CancellationToken cancellationToken)
 {
 	await Task.Delay(100);
@@ -51,7 +51,38 @@ async Task TestTimerAsync(CancellationToken cancellationToken)
 
 The behavior should be identical to an Azure Function. If the behavior is different it is most likely a bug in `CloudPad`. Please open an issue to discuss the matter.
 
+### HttpTrigger
+
+By default, all HTTP triggers use the `Function` authorization level. That is, each HTTP endpoint requires a unique `code` query string parameter when deployed otherwise you will get a `401 Unauthorized` error. You can retrieve the `code` query string parameter from the Azure portal. This behavior can be changed using the `AuthLevel` property of the `HttpTrigger` attribute.
+
+> Here, the example from above, where `AuthorizationLevel` has been changed to `Anonymous`:
+> ```cs
+> [HttpTrigger(AuthorizationLevel.Anonymous, Route = "test-async")]
+> ```
+> Note that this does not protect your HTTP endpoint. The endpoint is open to anyone and everyone.
+
+### TimerTrigger
+
+By default, all timer triggers run at startup. If this is undesirable there's a `CloudPad` specific property `RunAtStartup` (not to be confused with the Azure Web Jobs SDK setting `RunOnStartup`) that stops the timer trigger to running at startup of a local LINQPad script. Note that this setting has no effect once LINQPad script is deployed. If you want to disable the timer trigger locally for debugging purposes, simply remove the `TimerTrigger` attribute temporarily with a comment.
+
 ## Deployment
+
+### Prepare the Azure Function App LINQPad script host
+
+You can deploy several different LINQPad scripts to the same Azure Function App LINQPad script host but before you do so you need to prepare an **Azure Funciton App** environment.
+
+You can find the latest `CloudPad.FunctionApp` release from the GitHub releases tab. Only the `CloudPad.FunctionApp` is released this way, otherwise the `CloudPad` NuGet package should be used. Sign in to the Azure portal and open the platform feature, Advanced tools (Kudu). Open a debug conole and goto the `D:\home\site\wwwroot` directory and unpack the zip file there. 
+
+You also need to put a version of LINQPad on the Azure Funciton App environment. Download the LINQPad xcopy-deploy build from [here](http://www.linqpad.net/download.aspx) and unpack into `D:\home\site\tools\LINQPad.*`. Where `*` is the LINQPad version. As of writing this would be `5.31.0` so,  `D:\home\site\tools\LINQPad.5.31.0`. If successful you should have 4 files:
+
+~~~
+LINQPad.exe
+LINQPad.exe.config
+lprun.exe
+lprun.exe.config
+~~~
+
+### Deploy LINQPad script
 
 `CloudPad` is itself, its own little command-line tool but you need to run it through LINQPad, i.e. using `LPRun.exe`. As soon as you have your first script, you can _install_ `CloudPad` for ease of use, like this:
 
@@ -73,7 +104,7 @@ The assumption here is that you have a `*.PublishSettings` file somewhere up the
 
 When testing and developing you may get away with referencing only specific DLLs but when you deploy your script, the script can fail with file not found or assembly version mismatch errors. This is often due to missing explicit NuGet package or DLL references for the script itself. You should add additional NuGet package reference or DLLs if you run into this issue.
 
-`CloudPad` depends on:
+`CloudPad` is built for the `net461` target and depends on:
 
 * `Microsoft.AspNet.WebApi.Core.5.2.3`
 * `Newtonsoft.Json.9.0.1`.
@@ -81,6 +112,3 @@ When testing and developing you may get away with referencing only specific DLLs
 
 If you attempt to add a NuGet package that is incompatible with these dependencies you may run into additional issues. If stuck on an issue like this, enable assembly binding logging, i.e. `FusionLog` to getter better and more detailed error information.
 
-## API Reference
-
-TODO
