@@ -32,8 +32,8 @@ function msbuild(solutionFile, targets) {
     `msbuild ${solutionFile} /nologo ${targets
       .map(target => "/t:" + target)
       .join(" ")} /p:Configuration=Release /clp:ErrorsOnly;Summary /m`,
-    { env }
-  ).toString();
+    { env, stdio: "inherit" }
+  );
 }
 
 module.exports = {

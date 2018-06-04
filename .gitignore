@@ -12,3 +12,5 @@ publish-profile-*
 *.PublishSettings
 
 node_modules
+
+TestResults
