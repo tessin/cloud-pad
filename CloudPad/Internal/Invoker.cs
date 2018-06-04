@@ -132,7 +132,16 @@ namespace CloudPad.Internal
                     {
                         Log.Debug.Append($"LINQPad proxy exited");
 
-                        // todo: abort pending tasks, clear serverTask
+                        // todo: abort pending tasks
+
+                        _serverPipe.Dispose();
+                        _childProcess.Dispose();
+                        foreach (var item in _outstanding)
+                        {
+                            item.Value.TrySetCanceled();
+                        }
+                        _outstanding.Clear();
+                        _serverTask = null;
                     };
 
                     serverPipe.DisposeLocalCopyOfClientHandle();

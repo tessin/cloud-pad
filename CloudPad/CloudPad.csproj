@@ -5,7 +5,7 @@
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <PackageId>CloudPad</PackageId>
     <Authors>Tessin Nordic AB</Authors>
     <Description>Run LINQPad scripts as Azure funcitons.</Description>
@@ -16,6 +16,8 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
     <Copyright>Tessin Nordic AB</Copyright>
+
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

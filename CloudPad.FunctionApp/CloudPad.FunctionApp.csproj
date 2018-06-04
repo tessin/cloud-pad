@@ -3,6 +3,16 @@
         <TargetFramework>net461</TargetFramework>
         <RootNamespace>CloudPad</RootNamespace>
         <AssemblyName>CloudPad.FunctionApp</AssemblyName>
+        <Authors>Tessin Nordic AB</Authors>
+        <Company></Company>
+        <Product>CloudPad</Product>
+        <Description>Host LINQPad scripts in Azure funcitons.</Description>
+        <Copyright>Tessin Nordic AB</Copyright>
+        <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
+        <PackageTags>LINQPad Azure</PackageTags>
+        <AssemblyVersion>1.0.2.0</AssemblyVersion>
+        <FileVersion>1.0.2.0</FileVersion>
+        <Version>1.0.2</Version>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.13" />

@@ -359,7 +359,7 @@ namespace CloudPad.Internal
                     {
                         var functionJson = new JObject();
 
-                        functionJson["generatedBy"] = assemblyName.Name + "-" + assemblyName.Version;
+                        functionJson["generatedBy"] = assemblyName.Name + "-" + assemblyName.Version.Major + "." + assemblyName.Version.Minor + "." + assemblyName.Version.Build; // .NET calls build what semver calls revision
 
                         // "attributes" is used by the Azure Web Jobs SDK 
                         // to bind using metadata and takes precedence 
@@ -444,11 +444,11 @@ namespace CloudPad.Internal
                                         if (process.Name.Equals("lprun", StringComparison.OrdinalIgnoreCase))
                                         {
                                             var req2 = new HttpRequestMessage(HttpMethod.Delete, "api/processes/" + process.Id);
-                                            using (var res2 = await http.SendAsync(req))
+                                            using (var res2 = await http.SendAsync(req2))
                                             {
-                                                if (!res.IsSuccessStatusCode)
+                                                if (!res2.IsSuccessStatusCode)
                                                 {
-                                                    throw new CloudPadException("deployment: cannot kill LINQPad script. " + await res.Content.ReadAsStringAsync());
+                                                    throw new CloudPadException("deployment: cannot kill LINQPad script. " + await res2.Content.ReadAsStringAsync());
                                                 }
                                             }
                                         }
