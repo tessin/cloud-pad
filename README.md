@@ -96,7 +96,7 @@ cd %~dp1
 "C:\Program Files (x86)\LINQPad5\LPRun.exe" %1 -publish *.PublishSettings
 ```
 
-The assumption here is that you have a `*.PublishSettings` file somewhere up the directory path that can be used to access an Azure function.
+The assumption here is that you have a `*.PublishSettings` file somewhere up the directory path that can be used to access an Azure function. For example, if you have a script in a folder `C:\Source\cloud-pad\example.linq` it will look for a publish profile `C:\Source\cloud-pad\*.PublishSettings` then `C:\Source\*.PublishSettings` and finally `C:\*.PublishSettings` before giving up. The publish profile can be found in the Azure portal, at the top menu bar for any App Service Web Site, including an Azure Function App.
 
 ## FAQ/Known issues
 
