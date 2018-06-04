@@ -1,5 +1,6 @@
 ﻿using CloudPad.Internal;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -9,11 +10,52 @@ namespace CloudPad
 {
     public static class Program
     {
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        static extern IntPtr GetConsoleWindow();
+
         public static async Task MainAsync(object context, string[] args)
         {
             using (var host = new JobHost(context, args ?? new string[0]))
             {
-                await host.WaitAsync();
+                try
+                {
+                    await host.WaitAsync();
+                }
+                catch (Exception ex)
+                {
+                    if (0 < args?.Length && Environment.UserInteractive)
+                    {
+                        if (GetConsoleWindow() != IntPtr.Zero)
+                        {
+                            Console.WriteLine(FormattableString.Invariant($"[{ex.GetType().FullName}]: {ex.Message}"));
+
+                            var stackTrace = ex.StackTrace;
+                            if (!string.IsNullOrEmpty(stackTrace))
+                            {
+                                var reader = new StringReader(stackTrace);
+                                for (; ; )
+                                {
+                                    var ln = reader.ReadLine()?.Trim();
+                                    if (ln == null)
+                                    {
+                                        break;
+                                    }
+                                    if (0 < ln.Length)
+                                    {
+                                        Console.WriteLine("  " + ln);
+                                    }
+                                }
+                            }
+
+                            Console.WriteLine();
+                            Console.WriteLine("Press enter key to continue . . .");
+                            Console.ReadLine();
+
+                            return; // don't re-throw 
+                        }
+                    }
+                    throw;
+                }
             }
         }
     }

@@ -34,12 +34,13 @@ namespace CloudPad.Internal
 
         public async Task WaitAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var args = new Args(Options.Script, Options.Method, Options.RequestFileName, Options.ResponseFileName, Options.Compile + ":boolean", Options.OutputDirectory, Options.Debug + ":boolean", Options.Publish, Options.Unpublish);
+            var args = new Args(Options.Install + ":boolean", Options.Script, Options.Method, Options.RequestFileName, Options.ResponseFileName, Options.Compile + ":boolean", Options.OutputDirectory, Options.Debug + ":boolean", Options.Publish, Options.Unpublish);
             if (!args.Parse(_args))
             {
                 throw new CloudPadException("command line: cannot parse " + string.Join(" ", _args));
             }
 
+            var install = args.GetSingleOrDefault<bool>(Options.Install);
             var script = args.GetSingleOrDefault(Options.Script);
             var method = args.GetSingleOrDefault(Options.Method);
             var compile = args.GetSingleOrDefault<bool>(Options.Compile);
@@ -51,6 +52,12 @@ namespace CloudPad.Internal
             if (debug)
             {
                 Debugger.Launch();
+            }
+
+            if (install)
+            {
+                Shortcut.Install();
+                return;
             }
 
             if (compile && unpublish != null)
@@ -82,6 +89,11 @@ namespace CloudPad.Internal
                     }
 
                     script = Path.GetFullPath(script); // fully qualified
+
+                    if (publish != null)
+                    {
+                        publish = PathUtils.Resolve(publish);
+                    }
 
                     await CompileAsync(script, index.Functions, outputDirectory, publish);
                 }
@@ -215,8 +227,6 @@ namespace CloudPad.Internal
             string publish = null
         )
         {
-            // todo: packaging...
-
             var assembly = GetType().Assembly;
             var assemblyName = assembly.GetName();
 
@@ -407,7 +417,7 @@ namespace CloudPad.Internal
                     Trace.WriteLine("publishing...");
 
                     var publishProfile = new PublishProfile();
-                    publishProfile.ReadFromFile(Path.GetFullPath(publish));
+                    publishProfile.ReadFromFile(publish);
 
                     using (var http = new HttpClient())
                     {
@@ -421,12 +431,46 @@ namespace CloudPad.Internal
                             )
                         );
 
+                        // kill LPRun.exe if running
                         {
-                            var req = new HttpRequestMessage(HttpMethod.Put, "api/command");
-                            req.Content = new StringContent(JsonConvert.SerializeObject(new { command = $"rd /s /q \"scripts\\{scriptBaseName}\"", dir = @"D:\home\site\wwwroot" }), Encoding.UTF8, "application/json");
+                            var req = new HttpRequestMessage(HttpMethod.Get, "api/processes");
                             using (var res = await http.SendAsync(req))
                             {
-                                // ok
+                                if (res.IsSuccessStatusCode)
+                                {
+                                    var processes = await res.Content.ReadAsAsync<List<KuduProcess>>();
+                                    foreach (var process in processes)
+                                    {
+                                        if (process.Name.Equals("lprun", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            var req2 = new HttpRequestMessage(HttpMethod.Delete, "api/processes/" + process.Id);
+                                            using (var res2 = await http.SendAsync(req))
+                                            {
+                                                if (!res.IsSuccessStatusCode)
+                                                {
+                                                    throw new CloudPadException("deployment: cannot kill LINQPad script. " + await res.Content.ReadAsStringAsync());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    throw new CloudPadException("deployment: cannot kill LINQPad script. " + await res.Content.ReadAsStringAsync());
+                                }
+                            }
+                        }
+
+                        // unpublish existing script
+                        {
+                            var req = new HttpRequestMessage(HttpMethod.Post, "api/command");
+                            req.Content = new StringContent(JsonConvert.SerializeObject(new { command = $"for /f \"tokens=*\" %D in ('dir /b /a:d \"{scriptBaseName}_*\"') do (rd /s /q %D) && rd /s /q \"scripts\\{scriptBaseName}\"", dir = @"D:\home\site\wwwroot" }), Encoding.UTF8, "application/json");
+                            using (var res = await http.SendAsync(req))
+                            {
+                                if (!res.IsSuccessStatusCode)
+                                {
+                                    throw new CloudPadException("deployment: cannot unpublish LINQPad script. " + await res.Content.ReadAsStringAsync());
+                                }
                             }
                         }
 
@@ -436,7 +480,10 @@ namespace CloudPad.Internal
                             req.Content = new StreamContent(input);
                             using (var res = await http.SendAsync(req))
                             {
-                                // ok
+                                if (!res.IsSuccessStatusCode)
+                                {
+                                    throw new CloudPadException("deployment: cannot publish LINQPad script. " + await res.Content.ReadAsStringAsync());
+                                }
                             }
                         }
                     }

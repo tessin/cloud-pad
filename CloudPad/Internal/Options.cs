@@ -15,6 +15,8 @@
 
         public const string Debug = "debug";
 
+        public const string Install = "install";
+
         // mutually exclusive, implies compile
         public const string Publish = "publish";
         public const string Unpublish = "unpublish";

@@ -1,6 +1,6 @@
-# 🌩️ CloudPad
+# CloudPad
 
-> Run LINQPad scripts as Azure functions
+> 🌩️ Run LINQPad scripts as Azure functions
 
 ## Getting started
 
@@ -53,7 +53,19 @@ The behavior should be identical to an Azure Function. If the behavior is differ
 
 ## Deployment
 
+`CloudPad` is itself, its own little command-line tool but you need to run it through LINQPad, i.e. using `LPRun.exe`. As soon as you have your first script, you can _install_ `CloudPad` for ease of use, like this:
 
+> `$ "C:\Program Files (x86)\LINQPad5\LPRun.exe" example.linq -install`
+
+This will create a shortcut "Deploy LINQPad script to Azure" in the "Send To" Explorer file menu which in turn executes the following Batch file
+
+```bat
+@echo off
+cd %~dp1
+"C:\Program Files (x86)\LINQPad5\LPRun.exe" %1 -publish *.PublishSettings
+```
+
+The assumption here is that you have a `*.PublishSettings` file somewhere up the directory path that can be used to access an Azure function.
 
 ## FAQ/Known issues
 
@@ -65,10 +77,9 @@ When testing and developing you may get away with referencing only specific DLLs
 
 * `Microsoft.AspNet.WebApi.Core.5.2.3`
 * `Newtonsoft.Json.9.0.1`.
+* `ncrontab.3.3.0`.
 
-If you attempt to add a NuGet package that is incompatible with these dependencies you may run into additional issues.
-
-If stuck on an issue like this, enable assembly binding logging, i.e. `FusionLog` to getter better and more detailed error information.
+If you attempt to add a NuGet package that is incompatible with these dependencies you may run into additional issues. If stuck on an issue like this, enable assembly binding logging, i.e. `FusionLog` to getter better and more detailed error information.
 
 ## API Reference
 

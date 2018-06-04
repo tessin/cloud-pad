@@ -5,7 +5,7 @@
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
-    <Version>0.0.1</Version>
+    <Version>1.0.1</Version>
     <PackageId>CloudPad</PackageId>
     <Authors>Tessin Nordic AB</Authors>
     <Description>Run LINQPad scripts as Azure funcitons.</Description>
@@ -14,10 +14,23 @@
     <PackageTags>LINQPad Azure</PackageTags>
 
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+    <Copyright>Tessin Nordic AB</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="proxy.linq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <COMReference Include="IWshRuntimeLibrary.dll">
+      <Guid>f935dc20-1cf0-11d0-adb9-00c04fd58a0b</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>
