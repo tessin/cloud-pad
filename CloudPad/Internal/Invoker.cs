@@ -112,22 +112,22 @@ namespace CloudPad.Internal
                         processStartInfo.Arguments = "-optimize" + " " + proxyScriptFileName + " " + serverPipe.GetClientHandleAsString();
 #endif
                     }
-#if DEBUG
+
                     processStartInfo.RedirectStandardOutput = true;
                     processStartInfo.RedirectStandardError = true;
-#endif
+
                     var childProcess = Process.Start(processStartInfo);
 
                     childProcess.EnableRaisingEvents = true;
 
                     Log.Debug.Append($"LINQPad proxy started");
-#if DEBUG
-                    childProcess.OutputDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Output");
+
+                    childProcess.OutputDataReceived += (sender, e) => Trace.WriteLine(e.Data, "Output");
                     childProcess.BeginOutputReadLine();
 
-                    childProcess.ErrorDataReceived += (sender, e) => Debug.WriteLine(e.Data, "Error");
+                    childProcess.ErrorDataReceived += (sender, e) => Trace.WriteLine(e.Data, "Error");
                     childProcess.BeginErrorReadLine();
-#endif
+
                     childProcess.Exited += (sender, e) =>
                     {
                         Log.Debug.Append($"LINQPad proxy exited");
