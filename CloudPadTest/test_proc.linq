@@ -13,7 +13,7 @@ Task Main(string[] args) => Program.MainAsync(this, args);
 
 // Define other methods and classes here
 
-[TimerTrigger("*/5 * * * *")]
+[TimerTrigger("*/5 * * * * *")]
 void Tick()
 {
 	Console.WriteLine(Process.GetCurrentProcess().Id);
