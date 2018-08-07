@@ -6,7 +6,7 @@
 
 Add reference to NuGet package `CloudPad` (_if you don't have a LINQPad premium license you can add a reference to the assemblies directly. CloudPad does not require a premium license_).
 
-There's minimal setup and you cannot just take any LINQPad script and run it as an Azure function you need to have this bootstrapping snippet in your LINQPad program.
+There's minimal setup but you cannot just take any LINQPad script and run it as an Azure function, you need to have this bootstrapping snippet in your LINQPad program.
 
 ```cs
 Task Main(string[] args) => Program.MainAsync(this, args);
