@@ -44,6 +44,8 @@ namespace CloudPad.Internal
 
         private async Task<Result> RunAsync(string linqPadScriptFileName, string[] args, CancellationToken cancellationToken = default(CancellationToken))
         {
+            TextWriter lpRunLog = null;
+
             lock (this)
             {
                 // is LINQPad server running?
@@ -71,6 +73,15 @@ namespace CloudPad.Internal
 
                         processStartInfo.FileName = Path.Combine(linqPadDirectory, "LPRun.exe");
                         processStartInfo.WorkingDirectory = @"D:\home\site\wwwroot\bin";
+
+                        // retention policy: last 10 log files
+
+                        foreach (var fn in Directory.EnumerateFiles(@"D:\home\LogFiles\Application", "LPRun_*.log").OrderBy(fn => fn).Skip(10))
+                        {
+                            File.Delete(fn);
+                        }
+
+                        lpRunLog = File.AppendText($@"D:\home\LogFiles\Application\LPRun_{DateTime.UtcNow:yyyyMMdd_HHmm}.log");
                     }
                     else
                     {
@@ -120,17 +131,65 @@ namespace CloudPad.Internal
 
                     childProcess.EnableRaisingEvents = true;
 
-                    Log.Debug.Append($"LINQPad proxy started");
+                    Debug.WriteLine("LPRun started");
 
-                    childProcess.OutputDataReceived += (sender, e) => Trace.WriteLine(e.Data, "Output");
+                    if (lpRunLog != null)
+                    {
+                        lock (lpRunLog)
+                        {
+                            lpRunLog.WriteLine($"LPRun started {DateTime.UtcNow:o}");
+                        }
+                    }
+
+                    childProcess.OutputDataReceived += (sender, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            Debug.WriteLine(e.Data, "stdout");
+
+                            if (lpRunLog != null)
+                            {
+                                lock (lpRunLog)
+                                {
+                                    lpRunLog.WriteLine(e.Data);
+                                }
+                            }
+                        }
+                    };
                     childProcess.BeginOutputReadLine();
 
-                    childProcess.ErrorDataReceived += (sender, e) => Trace.WriteLine(e.Data, "Error");
+                    childProcess.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            Debug.WriteLine(e.Data, "stderr");
+
+                            if (lpRunLog != null)
+                            {
+                                lock (lpRunLog)
+                                {
+                                    lpRunLog.WriteLine(e.Data);
+                                }
+                            }
+                        }
+                    };
                     childProcess.BeginErrorReadLine();
 
                     childProcess.Exited += (sender, e) =>
                     {
-                        Log.Debug.Append($"LINQPad proxy exited");
+                        Debug.WriteLine($"LINQPad exited");
+
+                        if (lpRunLog != null)
+                        {
+                            var lpRunLog2 = lpRunLog;
+                            lock (lpRunLog2)
+                            {
+                                lpRunLog2.WriteLine($"LPRun exited {DateTime.UtcNow:o} with exit code {childProcess.ExitCode}");
+                                lpRunLog2.Flush();
+                                lpRunLog2.Dispose();
+                                lpRunLog = null; // no more logging to this stream
+                            }
+                        }
 
                         // todo: abort pending tasks
 
@@ -164,6 +223,14 @@ namespace CloudPad.Internal
 
             Log.Debug.Append($"sending {nameof(envelope.CorrelationId)}={envelope.CorrelationId}");
 
+            if (lpRunLog != null)
+            {
+                lock (lpRunLog)
+                {
+                    lpRunLog.WriteLine($"LINQPad script '{envelope.LINQPadScriptFileName}' started {DateTime.UtcNow:o}");
+                }
+            }
+
             _serverPipe.OutPipe.Send(envelope);
 
             using (cancellationToken.Register(() =>
@@ -174,7 +241,50 @@ namespace CloudPad.Internal
                 }
             }))
             {
-                return await tcs.Task;
+                try
+                {
+                    var result = await tcs.Task;
+
+                    if (lpRunLog != null)
+                    {
+                        lock (lpRunLog)
+                        {
+                            lpRunLog.WriteLine($"LINQPad script '{envelope.LINQPadScriptFileName}' exited {DateTime.UtcNow:o} ErrorCode={result.ErrorCode}");
+
+                            if (!string.IsNullOrEmpty(result.ExceptionTypeFullName))
+                            {
+                                lpRunLog.WriteLine($"ExceptionTypeFullName: {result.ExceptionTypeFullName}");
+                            }
+
+                            if (!string.IsNullOrEmpty(result.ExceptionMessage))
+                            {
+                                lpRunLog.WriteLine($"ExceptionMessage     : {result.ExceptionMessage}");
+                            }
+
+                            if (!string.IsNullOrEmpty(result.ExceptionFusionLog))
+                            {
+                                lpRunLog.WriteLine($"ExceptionFusionLog   : {result.ExceptionFusionLog}");
+                            }
+
+                            if (!string.IsNullOrEmpty(result.ExceptionStackTrace))
+                            {
+                                lpRunLog.WriteLine($"ExceptionStackTrace  : {result.ExceptionStackTrace}");
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+                finally
+                {
+                    if (lpRunLog != null)
+                    {
+                        lock (lpRunLog)
+                        {
+                            lpRunLog.Flush(); // flush after script invocation
+                        }
+                    }
+                }
             }
         }
 
