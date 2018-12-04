@@ -81,7 +81,9 @@ namespace CloudPad.Internal
                             File.Delete(fn);
                         }
 
-                        lpRunLog = File.AppendText($@"D:\home\LogFiles\Application\LPRun_{DateTime.UtcNow:yyyyMMdd_HHmm}.log");
+                        // by having the PID in the file name we prevent filename clashes
+
+                        lpRunLog = File.AppendText($@"D:\home\LogFiles\Application\LPRun_{DateTime.UtcNow:yyyyMMdd_HHmm}_{Process.GetCurrentProcess().Id}.log");
                     }
                     else
                     {
@@ -117,6 +119,7 @@ namespace CloudPad.Internal
                                 proxyScript.CopyTo(fs);
                             }
                         }
+
 #if DEBUG
                         processStartInfo.Arguments = proxyScriptFileName + " " + serverPipe.GetClientHandleAsString();
 #else
