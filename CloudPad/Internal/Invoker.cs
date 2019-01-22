@@ -121,9 +121,9 @@ namespace CloudPad.Internal
                         }
 
 #if DEBUG
-                        processStartInfo.Arguments = proxyScriptFileName + " " + serverPipe.GetClientHandleAsString();
+                        processStartInfo.Arguments = proxyScriptFileName + " " + serverPipe.GetClientHandleAsString() + " " + Process.GetCurrentProcess().Id;
 #else
-                        processStartInfo.Arguments = "-optimize" + " " + proxyScriptFileName + " " + serverPipe.GetClientHandleAsString();
+                        processStartInfo.Arguments = "-optimize" + " " + proxyScriptFileName + " " + serverPipe.GetClientHandleAsString() + " " + Process.GetCurrentProcess().Id; 
 #endif
                     }
 
