@@ -1,23 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../common.props" />
+
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
-    <Version>1.0.5</Version>
     <PackageId>CloudPad</PackageId>
-    <Authors>Tessin Nordic AB</Authors>
-    <Description>Run LINQPad scripts as Azure funcitons.</Description>
-    <RepositoryUrl></RepositoryUrl>
-    <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
-    <PackageTags>LINQPad Azure</PackageTags>
-
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-
-    <Copyright>Tessin Nordic AB</Copyright>
-
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
   </PropertyGroup>
 
     <!--include in NuGet package--> 
@@ -29,6 +19,8 @@
     <None Remove="proxy.linq" />
   </ItemGroup>
 
+  <!--if you need to rebuild the IWshRuntimeLibrary.dll, it is otherwise found in the ..\lib folder-->
+  <!--
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary.dll">
       <Guid>f935dc20-1cf0-11d0-adb9-00c04fd58a0b</Guid>
@@ -38,6 +30,11 @@
       <Lcid>0</Lcid>
       <Isolated>false</Isolated>
     </COMReference>
+  </ItemGroup>
+  -->
+
+  <ItemGroup>
+    <Reference Include="..\lib\Interop.IWshRuntimeLibrary.dll" />
   </ItemGroup>
 
   <ItemGroup>

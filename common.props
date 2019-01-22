@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Tessin Nordic AB</Authors>
+    <Description>Run LINQPad scripts as Azure funcitons.</Description>
+    <RepositoryUrl></RepositoryUrl>
+    <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
+    <PackageTags>LINQPad Azure</PackageTags>
+    <Copyright>Tessin Nordic AB</Copyright>
+
+    <Version>1.0.5</Version>
+    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+</Project>
