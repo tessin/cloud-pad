@@ -1,0 +1,6 @@
+[
+  {
+    "command": "dotnet",
+    "args": ["build", "CloudPad\\CloudPad.csproj"]
+  }
+]
