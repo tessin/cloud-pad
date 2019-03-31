@@ -247,14 +247,18 @@ namespace CloudPad.Internal
           // force load all dependencies into memory
           // see https://stackoverflow.com/a/2384679/58961
 
-          foreach (var loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
-          {
-            if (loadedAssembly.IsDynamic)
-            {
-              continue;
-            }
-            Console.WriteLine(loadedAssembly.GetName().Name + " " + loadedAssembly.Location);
-          }
+          // foreach (var loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
+          // {
+          //   if (loadedAssembly.IsDynamic)
+          //   {
+          //     continue;
+          //   }
+          //   Console.WriteLine(loadedAssembly.GetName().Name + " " + loadedAssembly.Location);
+          // }
+
+          // ================================
+
+          var baseName = "scripts" + "/" + scriptBaseName;
 
           // ================================
           // .vfs
@@ -269,15 +273,11 @@ namespace CloudPad.Internal
               var sha256 = new SHA256Managed();
               hash = BitConverter.ToString(sha256.ComputeHash(inp)).Replace("-", "");
             }
-            zip.CreateEntryFromFile(fd.Value, ".vfs/" + hash);
+            zip.CreateEntryFromFile(fd.Value, baseName + "/vfs/" + hash);
             vfs[fd.Key] = hash;
           }
 
-          zip.CreateEntryFromJson(vfs, ".vfs/index.json");
-
-          // ================================
-
-          var baseName = "scripts" + "/" + scriptBaseName;
+          zip.CreateEntryFromJson(vfs, baseName + "/vfs/index.json");
 
           // ================================
 

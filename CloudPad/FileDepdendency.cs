@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using Tessin.Internal;
 
 namespace CloudPad
@@ -9,21 +10,33 @@ namespace CloudPad
   {
     internal static Dictionary<string, string> fileDependencies = new Dictionary<string, string>();
 
+    static FileDependency()
+    {
+      var vfsRoot = Path.Combine(Path.GetDirectoryName(Internal.LINQPad.GetCurrentQueryPath()), "vfs");
+      var indexFileName = Path.Combine(vfsRoot, "index.json");
+      if (File.Exists(indexFileName))
+      {
+        foreach (var entry in JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(indexFileName)))
+        {
+          fileDependencies[entry.Key] = Path.Combine(vfsRoot, entry.Value);
+        }
+      }
+    }
+
     private readonly string fileName;
 
     public FileDependency(string fileName)
     {
       // if build context, resolve file and embed in build context
 
-      var abs = fileName;
+      string abs;
 
-      if (Path.IsPathRooted(abs))
+      if (Path.IsPathRooted(fileName))
       {
-        // ok, absolute
+        abs = fileName;
       }
       else
       {
-        // resolve relative file
         abs = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Internal.LINQPad.GetCurrentQueryPath()), fileName));
       }
 
@@ -33,6 +46,10 @@ namespace CloudPad
         {
           throw new FileNotFoundException($"cannot resolve file '{fileName}'", abs);
         }
+      }
+
+      if (!fileDependencies.ContainsKey(fileName))
+      {
         fileDependencies[fileName] = abs;
       }
 
@@ -41,7 +58,7 @@ namespace CloudPad
 
     public Stream OpenRead()
     {
-      return null; // open file for reading 
+      return File.OpenRead(fileDependencies[fileName]);
     }
   }
 }
