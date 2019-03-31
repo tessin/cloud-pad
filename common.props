@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <Authors>Tessin Nordic AB</Authors>
-    <Description>Run LINQPad scripts as Azure funcitons.</Description>
+    <Description>Run LINQPad scripts as Azure functions.</Description>
     <RepositoryUrl></RepositoryUrl>
     <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
     <PackageTags>LINQPad Azure</PackageTags>
