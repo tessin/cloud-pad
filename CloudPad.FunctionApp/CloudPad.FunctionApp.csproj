@@ -6,7 +6,7 @@
         <Authors>Tessin Nordic AB</Authors>
         <Company></Company>
         <Product>CloudPad</Product>
-        <Description>Host LINQPad scripts in Azure funcitons.</Description>
+        <Description>Host LINQPad scripts in Azure functions.</Description>
         <Copyright>Tessin Nordic AB</Copyright>
         <PackageProjectUrl>https://github.com/tessin/cloud-pad</PackageProjectUrl>
         <PackageTags>LINQPad Azure</PackageTags>

@@ -1,9 +1,9 @@
 <Query Kind="Program">
-  <Reference Relative="..\CloudPad\bin\Debug\net461\CloudPad.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\CloudPad.dll</Reference>
-  <Reference Relative="..\CloudPad\bin\Debug\net461\NCrontab.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\NCrontab.dll</Reference>
-  <Reference Relative="..\CloudPad\bin\Debug\net461\Newtonsoft.Json.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\Newtonsoft.Json.dll</Reference>
-  <Reference Relative="..\CloudPad\bin\Debug\net461\System.Net.Http.Formatting.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\System.Net.Http.Formatting.dll</Reference>
-  <Reference Relative="..\CloudPad\bin\Debug\net461\System.Web.Http.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Debug\net461\System.Web.Http.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Release\net461\CloudPad.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Release\net461\CloudPad.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Release\net461\NCrontab.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Release\net461\NCrontab.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Release\net461\Newtonsoft.Json.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Release\net461\Newtonsoft.Json.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Release\net461\System.Net.Http.Formatting.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Release\net461\System.Net.Http.Formatting.dll</Reference>
+  <Reference Relative="..\CloudPad\bin\Release\net461\System.Web.Http.dll">C:\Users\leidegre\Source\tessin\cloud-pad\CloudPad\bin\Release\net461\System.Web.Http.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Net.Http.dll</Reference>
   <Namespace>CloudPad</Namespace>
   <Namespace>System.Net.Http</Namespace>

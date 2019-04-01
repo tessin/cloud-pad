@@ -2,7 +2,7 @@
 
 const { tmpdir } = require("os");
 const path = require("path");
-const { exec, execSync, fork } = require("child_process");
+const { exec, execSync, spawn } = require("child_process");
 const { requestAsync } = require("./test-utils");
 const assert = require("assert");
 
@@ -10,6 +10,8 @@ const azlp = {
   fn: path.resolve("examples\\hello_world.linq"),
   dir: path.resolve("CloudPad.FunctionApp\\bin\\Release\\net461")
 };
+
+console.log(`compiling output into '${azlp.dir}'...`);
 
 console.log(
   execSync(
@@ -19,11 +21,12 @@ console.log(
   ).toString()
 );
 
-const func = fork(
-  require.resolve("azure-functions-core-tools/lib/main.js"),
+const func = spawn(
+  require.resolve("azure-functions-core-tools/bin/func.exe"),
   ["host", "start"],
   {
-    cwd: azlp.dir
+    cwd: azlp.dir,
+    stdio: "inherit"
   }
 );
 
