@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2017", // requires Node.js v 10.x or later
+    "module": "commonjs",
+    "sourceMap": false,
+    "jsx": "react",
+    "strict": true,
+    "outDir": "integration/lib",
+    "rootDir": "integration/src",
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "newLine": "LF"
+  },
+  "include": ["integration/src/**/*"],
+  "exclude": ["integration/src/**/*_test.ts"]
+}
