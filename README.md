@@ -67,6 +67,14 @@ By default, all timer triggers run at startup. If this is undesirable there's a 
 
 ## Deployment
 
+## File dependencies
+
+Starting with version `1.0.6`, there is a class called `FileDependency` in `CloudPad`. It can be used to bundle external file dependencies with scripts. The files are resolved relative the LINQPad script.
+
+For an example, see https://github.com/tessin/cloud-pad/blob/master/examples/file-dependency.linq
+
+Note that you have to specify your file dependnecies as members of your LINQPad UserQuery. You cant embed a `FileDependency` within a function and expect it to work. The `FileDependency` must be instansiated as your script is booting up for it to work.
+
 ### Prepare the Azure Function App LINQPad script host
 
 You can deploy several different LINQPad scripts to the same Azure Function App LINQPad script host but before you do so you need to prepare an **Azure Funciton App** environment.
