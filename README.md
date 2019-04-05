@@ -73,7 +73,7 @@ Starting with version `1.0.6`, there is a class called `FileDependency` in `Clou
 
 For an example, see https://github.com/tessin/cloud-pad/blob/master/examples/file-dependency.linq
 
-Note that you have to specify your file dependnecies as members of your LINQPad UserQuery. You cant embed a `FileDependency` within a function and expect it to work. The `FileDependency` must be instansiated as your script is booting up for it to work.
+Note that you have to specify your file dependencies as members of your LINQPad UserQuery. You cant embed a `FileDependency` within a function and expect it to work. The `FileDependency` must be instantiated as your script is booting up for it to work.
 
 ### Prepare the Azure Function App LINQPad script host
 
