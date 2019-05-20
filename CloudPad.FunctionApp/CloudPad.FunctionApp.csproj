@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <AzureFunctionsVersion>v1</AzureFunctionsVersion>
+    <Authors>John Leidegren</Authors>
+    <Company>Tessin Nordic AB</Company>
+    <Product>CloudPad</Product>
+    <Description>CloudPad Azure Function Runtime</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="1.2.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="LINQPad">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\LINQPad5\LINQPad.exe</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CloudPad\CloudPad.csproj" />
+  </ItemGroup>
+</Project>

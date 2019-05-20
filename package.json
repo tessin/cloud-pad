@@ -1,0 +1,9 @@
+{
+  "name": "cloud-pad",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "azure-functions-core-tools": "1"
+  }
+}
