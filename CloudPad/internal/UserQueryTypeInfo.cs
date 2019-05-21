@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 
 namespace CloudPad.Internal {
-  class UserQueryInfo {
+  class UserQueryTypeInfo {
     public Type Type { get; }
     public Assembly Assembly { get; }
     public string AssemblyLocation { get; }
@@ -11,7 +11,7 @@ namespace CloudPad.Internal {
     public string AssemblyName { get; }
     public string Id { get; }
 
-    public UserQueryInfo(object userQuery) {
+    public UserQueryTypeInfo(object userQuery) {
       Type = userQuery.GetType();
       Assembly = Type.Assembly;
       AssemblyLocation = Assembly.Location;

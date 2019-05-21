@@ -16,6 +16,9 @@ namespace CloudPad.Internal {
     public string OutDir { get; set; }
 
     public CompilationOptions(string queryPath) {
+      if (queryPath == null) {
+        throw new ArgumentNullException(nameof(queryPath));
+      }
       this.QueryPath = queryPath;
       this.QueryDirectoryName = Path.GetDirectoryName(queryPath);
       this.QueryName = Path.GetFileNameWithoutExtension(queryPath);
@@ -23,7 +26,7 @@ namespace CloudPad.Internal {
   }
 
   static class Compiler {
-    public static void Compile(UserQueryInfo userQuery, CompilationOptions options) {
+    public static void Compile(UserQueryTypeInfo userQuery, CompilationOptions options) {
       if (options.OutDir == null) {
         throw new InvalidOperationException("Compilation option 'OutDir' cannot be null");
       }

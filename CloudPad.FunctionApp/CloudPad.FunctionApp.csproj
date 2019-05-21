@@ -2,9 +2,8 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <AzureFunctionsVersion>v1</AzureFunctionsVersion>
-    <Authors>John Leidegren</Authors>
-    <Company>Tessin Nordic AB</Company>
-    <Product>CloudPad</Product>
+  </PropertyGroup>
+  <PropertyGroup>
     <Description>CloudPad Azure Function Runtime</Description>
   </PropertyGroup>
   <ItemGroup>

@@ -2,16 +2,22 @@ using CloudPad.Internal;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Tessin;
 
 namespace CloudPad {
   public static class Program {
-    public static Task MainAsync(object userQuery, string[] args) {
+    // LINQPad script entry point 
+    // when deployed as an Azure Function this method is not used
+    public static async Task<int> MainAsync(object userQuery, string[] args) {
       if (userQuery == null) {
         throw new ArgumentNullException("User query cannot be null. You should pass 'this' here.", nameof(userQuery));
       }
+
+      var userQueryInfo = new UserQueryTypeInfo(userQuery);
 
       args = args ?? new string[0]; // note: `args` can be null
 
@@ -20,33 +26,39 @@ namespace CloudPad {
         throw new InvalidOperationException("A file name is required (save your LINQPad query to disk). Without it, we cannot establish a context for your functions.");
       }
 
-      // when executed as a function this main is never called
+      var currentQueryPathInfo = new UserQueryFileInfo(currentQueryPath);
+
+      // ========
+
       if (args.Length == 0) {
-        // default behavior, i.e. development mode
-
-        var tcs = new TaskCompletionSource<int>();
-
-        Util.Cleanup += (sender, e) => {
-          tcs.SetCanceled();
-        };
-
-        // we need to launch the job host to get a working directory to compile the script into
-
         // todo: storage emulator?
 
-#if DEBUG
-        var jobHost = JobHost.Launch(currentQueryPath, @"C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad.FunctionApp\bin\Debug\net461");
+#if !DEBUG
+        var workingDirectory = @"C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad.FunctionApp\bin\Debug\net461";
 #else
-        var jobHost = JobHost.Launch(currentQueryPath);
+        var workingDirectory = Path.Combine(Env.GetLocalAppDataDirectory(), currentQueryPathInfo.InstanceId);
 #endif
 
-        Compiler.Compile(new UserQueryInfo(userQuery), new CompilationOptions(currentQueryPath) {
-          OutDir = jobHost.WorkingDirectory
+        if (!File.Exists(Path.Combine(workingDirectory, "bin", "CloudPad.FunctionApp.dll"))) {
+          // need to deploy the CloudPad.FunctionApp runtime
+          using (var tempFile = new TempFile()) {
+            var req = WebRequest.Create("https://github.com/tessin/cloud-pad/releases/download/2.0.0-beta.1/CloudPad.FunctionApp.zip");
+            using (var res = req.GetResponse()) {
+              using (var zip = File.Create(tempFile.FileName)) {
+                res.GetResponseStream().CopyTo(zip);
+              }
+            }
+            ZipFile.ExtractToDirectory(tempFile.FileName, workingDirectory);
+          }
+        }
+
+        Compiler.Compile(new UserQueryTypeInfo(userQuery), new CompilationOptions(currentQueryPath) {
+          OutDir = workingDirectory
         });
 
-        // and we are live!
+        await JobHost.LaunchAsync(workingDirectory);
 
-        return tcs.Task; // keep running...
+        return 0;
       } else {
         if ("LPRun.exe".Equals(Process.GetCurrentProcess().MainModule.ModuleName, StringComparison.OrdinalIgnoreCase)) {
           Trace.Listeners.Add(new ConsoleTraceListener());
@@ -54,14 +66,12 @@ namespace CloudPad {
 
         var options = CommandLine.Parse(args, new Options { });
         if (options.compile) {
-          var userQueryInfo = new UserQueryInfo(userQuery);
           var compilationOptions = new CompilationOptions(currentQueryPath);
           compilationOptions.OutDir = options.compile_out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id) : Path.GetFullPath(options.compile_out_dir);
           Compiler.Compile(userQueryInfo, compilationOptions);
           Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
-          return Task.FromResult(0);
+          return 0;
         } else if (options.publish) {
-          var userQueryInfo = new UserQueryInfo(userQuery);
           var compilationOptions = new CompilationOptions(currentQueryPath);
           compilationOptions.OutDir = Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id);
           try {
@@ -74,10 +84,10 @@ namespace CloudPad {
             Directory.Delete(compilationOptions.OutDir, true);
           }
           Trace.WriteLine("Done.");
-          return Task.FromResult(0);
+          return 0;
         }
 
-        return Task.FromResult(1);
+        return 1;
       }
     }
   }
