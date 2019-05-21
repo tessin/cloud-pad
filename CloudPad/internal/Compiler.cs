@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CloudPad.Internal {
   class CompilationOptions {
@@ -94,15 +92,12 @@ namespace CloudPad.Internal {
     }
 
     private static List<string> LoadAllUserAssemblies(AppDomain appDomain) {
-      const string LINQPad = "LINQPad";
+      var linqPadAssembly = Assembly.Load("LINQPad");
 
-      var visited = new HashSet<string> { LINQPad };
+      var visited = new HashSet<string> { linqPadAssembly.FullName };
 
-      var lpAssembly = Assembly.Load(LINQPad);
-
-      // if it's a reference LINQPad manages we don't want to load it 
-      foreach (var r in lpAssembly.GetReferencedAssemblies()) {
-        visited.Add(r.Name);
+      foreach (var r in linqPadAssembly.GetReferencedAssemblies()) {
+        visited.Add(r.FullName);
       }
 
       void WalkReferencedAssemblies(Assembly assembly) {
@@ -110,7 +105,7 @@ namespace CloudPad.Internal {
           return;
         }
         foreach (var assemblyRef in assembly.GetReferencedAssemblies()) {
-          if (visited.Add(assemblyRef.Name)) {
+          if (visited.Add(assemblyRef.FullName)) {
             Assembly referencedAssembly;
             try {
               referencedAssembly = appDomain.Load(assemblyRef);
@@ -125,7 +120,7 @@ namespace CloudPad.Internal {
       };
 
       foreach (var assembly in appDomain.GetAssemblies()) {
-        if (visited.Add(assembly.GetName().Name)) {
+        if (visited.Add(assembly.FullName)) {
           WalkReferencedAssemblies(assembly);
         }
       }
@@ -136,7 +131,7 @@ namespace CloudPad.Internal {
 
       var exclude = new[]{
           // Ignore stuff from the LINQPad installation dir
-        CanonicalDirectoryName(Path.GetDirectoryName(lpAssembly.Location)),
+        CanonicalDirectoryName(Path.GetDirectoryName(linqPadAssembly.Location)),
 
           // Ignore stuff from the Windows dir
         CanonicalDirectoryName(Environment.GetEnvironmentVariable("WINDIR")),
@@ -155,7 +150,7 @@ namespace CloudPad.Internal {
 
       var list = new List<string>();
 
-      foreach (var assembly in appDomain.GetAssemblies()) {
+      foreach (var assembly in appDomain.GetAssemblies().OrderBy(x => x.FullName)) {
         if (assembly.IsDynamic) {
           continue;
         }
@@ -184,18 +179,20 @@ namespace CloudPad.Internal {
           }
         }
         if (skip) {
+          Debug.WriteLine($"Excluded '{assembly.FullName}'", nameof(Compiler));
           continue;
         }
 
         // ====
 
         if (excludeAssemblyByFullName.Contains(assembly.FullName)) {
+          Debug.WriteLine($"Excluded '{assembly.FullName}'", nameof(Compiler));
           continue;
         }
 
         list.Add(assemblyFullPath);
 
-        Debug.WriteLine($"Added assembly '{assembly.FullName}' from '{assemblyFullPath}'");
+        Debug.WriteLine($"Included '{assembly.FullName}'\n  from '{assemblyFullPath}'", nameof(Compiler));
       }
 
       return list;

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace CloudPad.Internal {
@@ -51,12 +53,21 @@ namespace CloudPad.Internal {
     public static List<FunctionDescriptor> BindAll(Type userQuery) {
       var functions = new List<FunctionDescriptor>();
 
+      var exclude = new HashSet<string>(typeof(object).GetMethods(BindingFlags.Public | BindingFlags.Instance).Select(m => m.Name));
+
       foreach (var m in userQuery.GetMethods(BindingFlags.Public | BindingFlags.Instance)) {
+        if (exclude.Contains(m.Name)) {
+          continue;
+        }
         var f = Bind(m);
         if (f != null) {
           functions.Add(f);
+        } else {
+          Trace.WriteLine($"Public non-static method '{m.Name}' does not have a function trigger attribute.", nameof(FunctionBinder));
         }
       }
+
+      Trace.WriteLine($"Found {functions.Count} function(s).", nameof(FunctionBinder));
 
       return functions;
     }

@@ -1,13 +1,9 @@
 using CloudPad.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Tessin;
 
 namespace CloudPad {
@@ -39,7 +35,7 @@ namespace CloudPad {
         // todo: storage emulator?
 
 #if DEBUG
-        var jobHost = JobHost.Launch(currentQueryPath, @"C:\Users\leidegre\Source\tessin\cloud-pad3\CloudPad.FunctionApp\bin\Debug\net461");
+        var jobHost = JobHost.Launch(currentQueryPath, @"C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad.FunctionApp\bin\Debug\net461");
 #else
         var jobHost = JobHost.Launch(currentQueryPath);
 #endif
@@ -52,16 +48,32 @@ namespace CloudPad {
 
         return tcs.Task; // keep running...
       } else {
+        if ("LPRun.exe".Equals(Process.GetCurrentProcess().MainModule.ModuleName, StringComparison.OrdinalIgnoreCase)) {
+          Trace.Listeners.Add(new ConsoleTraceListener());
+        }
+
         var options = CommandLine.Parse(args, new Options { });
         if (options.compile) {
-          var uqi = new UserQueryInfo(userQuery);
-
+          var userQueryInfo = new UserQueryInfo(userQuery);
           var compilationOptions = new CompilationOptions(currentQueryPath);
-
-          compilationOptions.OutDir = options.compile_out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, uqi.AssemblyName) : Path.GetFullPath(options.compile_out_dir);
-
-          Compiler.Compile(new UserQueryInfo(uqi), compilationOptions);
-
+          compilationOptions.OutDir = options.compile_out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id) : Path.GetFullPath(options.compile_out_dir);
+          Compiler.Compile(userQueryInfo, compilationOptions);
+          Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
+          return Task.FromResult(0);
+        } else if (options.publish) {
+          var userQueryInfo = new UserQueryInfo(userQuery);
+          var compilationOptions = new CompilationOptions(currentQueryPath);
+          compilationOptions.OutDir = Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id);
+          try {
+            Compiler.Compile(userQueryInfo, compilationOptions);
+            var publishSettingsFileName = FileUtil.ResolveSearchPatternUpDirectoryTree(compilationOptions.QueryDirectoryName, "*.PublishSettings").Single();
+            var kudu = KuduClient.FromPublishProfile(publishSettingsFileName);
+            Trace.WriteLine($"Publishing to '{kudu.Host}'...");
+            kudu.ZipUpload(compilationOptions.OutDir);
+          } finally {
+            Directory.Delete(compilationOptions.OutDir, true);
+          }
+          Trace.WriteLine("Done.");
           return Task.FromResult(0);
         }
 
