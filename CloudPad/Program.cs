@@ -21,6 +21,9 @@ namespace CloudPad {
 
       args = args ?? new string[0]; // note: `args` can be null
 
+      //Util.CurrentQuery // required for connection info
+      //Util.CurrentQuery.GetConnectionInfo()
+
       var currentQueryPath = Util.CurrentQueryPath;
       if (currentQueryPath == null) {
         throw new InvalidOperationException("A file name is required (save your LINQPad query to disk). Without it, we cannot establish a context for your functions.");

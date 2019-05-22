@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace CloudPad.Internal {
   class JobHost {
-    private static string GetAzureFunctionsCoreTools(string funcVersion) {
-      var funcDir = Path.Combine(Env.GetLocalAppDataDirectory(), $"func.{funcVersion}");
+    private static string GetAzureFunctionsCoreTools(string version) {
+      var funcDir = Path.Combine(Env.GetLocalAppDataDirectory(), $"func.{version}");
 
       var funcFileName = Path.Combine(funcDir, "func.exe");
       if (!File.Exists(funcFileName)) {
         var azureFunctionsCliZip = funcDir + ".zip";
-        var req = WebRequest.Create($"https://functionscdn.azureedge.net/public/{funcVersion}/Azure.Functions.Cli.zip");
+        var req = WebRequest.Create($"https://functionscdn.azureedge.net/public/{version}/Azure.Functions.Cli.zip");
         using (var res = req.GetResponse()) {
           using (var zip = File.Create(azureFunctionsCliZip)) {
             res.GetResponseStream().CopyTo(zip);
@@ -43,8 +43,27 @@ namespace CloudPad.Internal {
 
       // ================
 
+      // this implementation is worth revising with respect to the following documentation
+      // https://docs.microsoft.com/en-us/dotnet/framework/app-domains/resolve-assembly-loads?view=netframework-4.8
+
+      // for some reason, I ran into a failure to resolve "System.Runtime.Loader"
+      // the next day after I restarted all applications (not a reboot) the problem wasn't there
+      // and I used procmon to note that "System.Runtime.Loader" was loaded from GAC
+
       AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
         Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
+        if (e.RequestingAssembly != null) {
+          Debug.WriteLine($"  RequestingAssembly '{e.RequestingAssembly}'", "func.exe");
+        }
+
+        //I don't remember precisly if this is useful or not, couldn't tell that it was, so...
+        //foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+        //  if (assembly.FullName == e.Name) {
+        //    Debug.WriteLine($"ResolvedAssembly '{e.Name}' from loaded set of assemblies", "func.exe");
+
+        //    return assembly;
+        //  }
+        //}
 
         var name = new AssemblyName(e.Name);
 
@@ -56,11 +75,11 @@ namespace CloudPad.Internal {
         foreach (var probePath in probePaths) {
           if (File.Exists(probePath)) {
             Debug.WriteLine($"ResolvedAssembly '{e.Name}' as '{probePath}'", "func.exe");
-
             return Assembly.LoadFrom(probePath);
           }
         }
 
+        Debug.WriteLine($"UnresolvedAssembly '{e.Name}'", "func.exe");
         return null;
       };
 
