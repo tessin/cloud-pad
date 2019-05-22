@@ -46,7 +46,33 @@ namespace CloudPad.Internal {
         }
       }
 
-      var f = new FunctionDescriptor(m, trigger, parameterBindings);
+      var constructors = m.DeclaringType.GetConstructors();
+      if (!(constructors.Length == 1)) {
+        throw new ApplicationException($"Declaring type '{m.DeclaringType}' of function '{m.Name}' should have exactly 1 constructor.");
+      }
+
+      IUserQueryActivator activator;
+
+      var constructor = constructors[0];
+      var constructorParameters = constructor.GetParameters();
+      switch (constructorParameters.Length) {
+        case 0: {
+          activator = new UserQueryActivator(m.DeclaringType);
+          break; // ok, parameterless
+        }
+        case 1: {
+          var constructorParameter0 = constructorParameters[0];
+          if (constructorParameter0.ParameterType == typeof(System.Data.IDbConnection)) {
+            activator = new UserQueryWithConnectionActivator(m.DeclaringType);
+            break; // ok, typed data context
+          }
+          goto default;
+        }
+        default:
+          throw new ApplicationException($"Declaring type '{m.DeclaringType}' of function '{m.Name}' has an unsupported constructor signature.");
+      }
+
+      var f = new FunctionDescriptor(m, trigger, parameterBindings, activator);
       return f;
     }
 
@@ -55,9 +81,9 @@ namespace CloudPad.Internal {
 
       var exclude = new HashSet<string>(typeof(object).GetMethods(BindingFlags.Public | BindingFlags.Instance).Select(m => m.Name));
 
-      foreach (var m in userQuery.GetMethods(BindingFlags.Public | BindingFlags.Instance)) {
+      foreach (var m in userQuery.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)) {
         if (exclude.Contains(m.Name)) {
-          continue;
+          continue; // if you for some reason decide to override .ToString or whatever...
         }
         var f = Bind(m);
         if (f != null) {

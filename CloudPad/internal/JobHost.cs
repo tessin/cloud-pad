@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 namespace CloudPad.Internal {
   class JobHost {
     private static string GetAzureFunctionsCoreTools(string version) {
-      var funcDir = Path.Combine(Env.GetLocalAppDataDirectory(), $"func.{version}");
-
+      var funcRoot = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "Azure.Functions.Cli");
+      var funcDir = Path.Combine(funcRoot, version);
       var funcFileName = Path.Combine(funcDir, "func.exe");
       if (!File.Exists(funcFileName)) {
+        Directory.CreateDirectory(funcDir);
         var azureFunctionsCliZip = funcDir + ".zip";
         var req = WebRequest.Create($"https://functionscdn.azureedge.net/public/{version}/Azure.Functions.Cli.zip");
         using (var res = req.GetResponse()) {
@@ -23,7 +24,6 @@ namespace CloudPad.Internal {
         ZipFile.ExtractToDirectory(azureFunctionsCliZip, funcDir);
         File.Delete(azureFunctionsCliZip);
       }
-
       return funcDir;
     }
 

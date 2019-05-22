@@ -26,7 +26,7 @@ namespace CloudPad.Internal {
   }
 
   static class Compiler {
-    public static void Compile(UserQueryTypeInfo userQuery, CompilationOptions options) {
+    public static void Compile(UserQueryTypeInfo userQuery, CompilationOptions options, QueryInfo currentQueryInfo) {
       if (options.OutDir == null) {
         throw new InvalidOperationException("Compilation option 'OutDir' cannot be null");
       }
@@ -61,6 +61,11 @@ namespace CloudPad.Internal {
         cloudPad["scriptFile"] = userQuery.AssemblyLocationFileName;
         cloudPad["typeName"] = userQuery.Type.FullName;
         cloudPad["methodName"] = f.Method.Name;
+
+        if (currentQueryInfo.Provider != null) {
+          cloudPad["providerName"] = currentQueryInfo.Provider;
+          cloudPad["connectionString"] = Util.CurrentCxString;
+        }
 
         functionJson["cloudPad"] = cloudPad;
 

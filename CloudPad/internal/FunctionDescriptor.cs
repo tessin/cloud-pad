@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace CloudPad.Internal {
@@ -7,11 +5,13 @@ namespace CloudPad.Internal {
     public MethodInfo Method { get; }
     public ITriggerAttribute Trigger { get; }
     public FunctionParameterBindings ParameterBindings { get; }
+    public IUserQueryActivator Activator { get; }
 
-    public FunctionDescriptor(MethodInfo method, ITriggerAttribute trigger, FunctionParameterBindings parameterBindings) {
+    public FunctionDescriptor(MethodInfo method, ITriggerAttribute trigger, FunctionParameterBindings parameterBindings, IUserQueryActivator activator) {
       this.Method = method;
       this.Trigger = trigger;
       this.ParameterBindings = parameterBindings;
+      this.Activator = activator;
     }
   }
 }

@@ -33,6 +33,13 @@ namespace CloudPad {
       }
     }
 
+    private static readonly PropertyInfo _currentCxString;
+    public static string CurrentCxString {
+      get {
+        return (string)_currentCxString?.GetValue(null);
+      }
+    }
+
     static Util() {
       _util = Type.GetType("LINQPad.Util, LINQPad", false, false);
 
@@ -40,6 +47,7 @@ namespace CloudPad {
 
       _currentQuery = _util?.GetProperty("CurrentQuery");
       _currentQueryPath = _util?.GetProperty("CurrentQueryPath");
+      _currentCxString = _util?.GetProperty("CurrentCxString");
 
       _cache = _util?.GetMember("Cache")
         .OfType<MethodInfo>()

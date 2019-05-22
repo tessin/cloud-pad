@@ -50,12 +50,12 @@ namespace CloudPad {
     /// <summary>
     /// Gets the http methods that are supported for the function.
     /// </summary>
-    public string[] Methods { get; private set; }
+    public string[] Methods { get; set; }
 
     /// <summary>
     /// Gets the authorization level for the function.
     /// </summary>
-    public AuthorizationLevel? AuthLevel { get; private set; }
+    public AuthorizationLevel? AuthLevel { get; set; }
 
     // ====
 

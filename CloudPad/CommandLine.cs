@@ -5,7 +5,7 @@ using System.Reflection;
 namespace Tessin {
   class Options {
     public bool compile;
-    public string compile_out_dir;
+    public string out_dir;
 
     public bool publish;
   }

@@ -9,14 +9,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="1.1.0" />
+    
+    <!--this is the most common version in terms of download-->
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="LINQPad">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\LINQPad5\LINQPad.exe</HintPath>
+      <HintPath>C:\Program Files (x86)\LINQPad5\LINQPad.exe</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>

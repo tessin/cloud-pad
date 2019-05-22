@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 namespace CloudPad.FunctionApp {
-  class FunctionExecutor {
+  class FunctionExecutor : IFunctionMetadata {
     static FunctionExecutor() {
       System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(LINQPad.Util).TypeHandle);
     }
@@ -54,6 +54,8 @@ namespace CloudPad.FunctionApp {
         var scriptFile = (string)metadata["scriptFile"];
         var typeName = (string)metadata["typeName"];
         var methodName = (string)metadata["methodName"];
+        var providerName = (string)metadata["providerName"];
+        var connectionString = (string)metadata["connectionString"];
 
         log.Info($"InitializingFunction ApplicationBase='{applicationBase}', ScriptFile='{scriptFile}'", nameof(FunctionExecutor));
 
@@ -69,7 +71,9 @@ namespace CloudPad.FunctionApp {
 
         // launch cleanup task
 
-        tcs.SetResult(new FunctionExecutor(func, functionJsonLastWriteTime, dir));
+        var f = new FunctionExecutor(func, functionJsonLastWriteTime, dir, providerName: providerName, connectionString: connectionString);
+
+        tcs.SetResult(f);
       } catch (Exception ex) {
         tcs.SetException(ex);
       }
@@ -83,26 +87,40 @@ namespace CloudPad.FunctionApp {
     public DateTime LastWriteTime { get; }
     public string ApplicationBase { get; }
 
-    public FunctionExecutor(FunctionDescriptor function, DateTime lastWriteTime, string applicationBase) {
+    public string ProviderName { get; }
+    public string ConnectionString { get; set; }
+
+    public FunctionExecutor(FunctionDescriptor function, DateTime lastWriteTime, string applicationBase, string providerName, string connectionString) {
       Function = function;
       LastWriteTime = lastWriteTime;
       ApplicationBase = applicationBase;
+      ProviderName = providerName;
+      ConnectionString = connectionString;
     }
 
-    public object Invoke(FunctionArgumentList arguments, TraceWriter log) {
+    public async Task<object> InvokeAsync(FunctionArgumentList arguments, TraceWriter log) {
       var m = Function.Method;
 
-      object userQuery;
+      using (var scope = Function.Activator.CreateScope(this)) {
+        object userQuery;
 
-      using (new LoaderLock(ApplicationBase)) {
-        // the user query constructor must run with a loader like lock
-        // this is because there's no other way for us to inject context
-        // in a reliable manner
+        using (new LoaderLock(ApplicationBase)) {
+          // the user query constructor must run with a loader like lock
+          // this is because there's no other way for us to inject context
+          // in a reliable manner
 
-        userQuery = Activator.CreateInstance(m.DeclaringType); // todo: connection 
+          userQuery = scope.CreateInstance(); // pass application base?
+        }
+
+        var result = m.Invoke(userQuery, arguments.Apply(Function.ParameterBindings));
+
+        var task = result as Task;
+        if (task != null) {
+          await task; // do not exit scope until task is finished
+        }
+
+        return result;
       }
-
-      return m.Invoke(userQuery, arguments.Apply(Function.ParameterBindings));
     }
   }
 }

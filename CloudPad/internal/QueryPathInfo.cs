@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace CloudPad.Internal {
-  class UserQueryFileInfo {
+  class QueryPathInfo {
     public string QueryPath { get; }
     public string QueryDirectoryName { get; }
     public string QueryName { get; }
@@ -17,7 +17,7 @@ namespace CloudPad.Internal {
 
     public string InstanceId { get; }
 
-    public UserQueryFileInfo(string queryPath) {
+    public QueryPathInfo(string queryPath) {
       if (queryPath == null) {
         throw new ArgumentNullException(nameof(queryPath));
       }

@@ -21,15 +21,19 @@ namespace CloudPad {
 
       args = args ?? new string[0]; // note: `args` can be null
 
-      //Util.CurrentQuery // required for connection info
-      //Util.CurrentQuery.GetConnectionInfo()
+      var currentQuery = Util.CurrentQuery;
+      if (currentQuery == null) {
+        throw new InvalidOperationException("This script must be run from wthin a LINQPad context (either via LINQPad or LPRun).");
+      }
+
+      var currentQueryInfo = new QueryInfo(currentQuery);
 
       var currentQueryPath = Util.CurrentQueryPath;
       if (currentQueryPath == null) {
         throw new InvalidOperationException("A file name is required (save your LINQPad query to disk). Without it, we cannot establish a context for your functions.");
       }
 
-      var currentQueryPathInfo = new UserQueryFileInfo(currentQueryPath);
+      var currentQueryPathInfo = new QueryPathInfo(currentQueryPath);
 
       // ========
 
@@ -57,7 +61,7 @@ namespace CloudPad {
 
         Compiler.Compile(new UserQueryTypeInfo(userQuery), new CompilationOptions(currentQueryPath) {
           OutDir = workingDirectory
-        });
+        }, currentQueryInfo);
 
         await JobHost.LaunchAsync(workingDirectory);
 
@@ -70,15 +74,15 @@ namespace CloudPad {
         var options = CommandLine.Parse(args, new Options { });
         if (options.compile) {
           var compilationOptions = new CompilationOptions(currentQueryPath);
-          compilationOptions.OutDir = options.compile_out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id) : Path.GetFullPath(options.compile_out_dir);
-          Compiler.Compile(userQueryInfo, compilationOptions);
+          compilationOptions.OutDir = options.out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id) : Path.GetFullPath(options.out_dir);
+          Compiler.Compile(userQueryInfo, compilationOptions, currentQueryInfo);
           Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
           return 0;
         } else if (options.publish) {
           var compilationOptions = new CompilationOptions(currentQueryPath);
           compilationOptions.OutDir = Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id);
           try {
-            Compiler.Compile(userQueryInfo, compilationOptions);
+            Compiler.Compile(userQueryInfo, compilationOptions, currentQueryInfo);
             var publishSettingsFileName = FileUtil.ResolveSearchPatternUpDirectoryTree(compilationOptions.QueryDirectoryName, "*.PublishSettings").Single();
             var kudu = KuduClient.FromPublishProfile(publishSettingsFileName);
             Trace.WriteLine($"Publishing to '{kudu.Host}'...");
