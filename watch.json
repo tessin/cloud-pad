@@ -2,5 +2,14 @@
   {
     "command": "dotnet",
     "args": ["build", "cloud-pad.sln"]
+  },
+  {
+    "command": "lprun",
+    "args": [
+      "C:\\Users\\leidegre\\Desktop\\neils\\Banners_Partner.linq",
+      "--compile",
+      "--out-dir",
+      "CloudPad.FunctionApp\\bin\\Debug\\net461"
+    ]
   }
 ]

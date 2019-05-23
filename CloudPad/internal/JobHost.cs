@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace CloudPad.Internal {
   class JobHost {
     private static string GetAzureFunctionsCoreTools(string version) {
-      var funcRoot = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "Azure.Functions.Cli");
+      var funcRoot = Path.Combine(Env.GetProgramDataDirectory(), "func");
       var funcDir = Path.Combine(funcRoot, version);
       var funcFileName = Path.Combine(funcDir, "func.exe");
       if (!File.Exists(funcFileName)) {
@@ -25,6 +26,108 @@ namespace CloudPad.Internal {
         File.Delete(azureFunctionsCliZip);
       }
       return funcDir;
+    }
+
+    public static void Prepare() {
+      // this should be done exactly once before any call to `LaunchAsync`
+
+      var azureFunctionsCoreTools = GetAzureFunctionsCoreTools("1.0.19");
+
+      var funcConfig = System.Xml.Linq.XElement.Load(Path.Combine(azureFunctionsCoreTools, "func.exe.config"));
+      var runtime = funcConfig.Element("runtime");
+
+      var assemblyBindingRedirects = new Dictionary<string, object>();
+
+      System.Xml.Linq.XNamespace ns = "urn:schemas-microsoft-com:asm.v1";
+      var assemblyBinding = runtime.Element(ns + "assemblyBinding");
+      var assemblyIdentityName = ns + "assemblyIdentity";
+      var bindingRedirectName = ns + "bindingRedirect";
+      foreach (var dependentAssembly in assemblyBinding.Elements(ns + "dependentAssembly")) {
+        var assemblyIdentity = dependentAssembly.Element(assemblyIdentityName);
+
+        var fullName = (string)assemblyIdentity.Attribute("name");
+
+        if ((string)assemblyIdentity.Attribute("culture") != null) {
+          fullName += ", Culture=" + (string)assemblyIdentity.Attribute("culture");
+        }
+
+        if ((string)assemblyIdentity.Attribute("publicKeyToken") != null) {
+          fullName += ", PublicKeyToken=" + new StrongNameKeyPair((string)assemblyIdentity.Attribute("publicKeyToken"));
+        }
+
+        var assemblyName = new AssemblyName(fullName);
+
+        var bindingRedirect = dependentAssembly.Element(bindingRedirectName);
+        var oldVersion = ((string)bindingRedirect.Attribute("oldVersion")).Split('-');
+        assemblyBindingRedirects[assemblyName.FullName] = new {
+          minVersion = new Version(oldVersion[0]),
+          maxVersion = new Version(oldVersion[1]),
+          newVersion = new Version((string)bindingRedirect.Attribute("newVersion")),
+        };
+      }
+
+      Extensions.Dump(assemblyBindingRedirects);
+
+      AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
+        // note: e.RequestingAssembly is always null (for some reason?)
+
+        Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
+
+        var name = new AssemblyName(e.Name);
+
+        var probePaths = new[] {
+          Path.Combine(azureFunctionsCoreTools, name.Name + ".dll"), // DLL first
+          Path.Combine(azureFunctionsCoreTools, name.Name + ".exe"),
+        };
+
+        foreach (var probePath in probePaths) {
+          if (File.Exists(probePath)) {
+            var probeAssemblyName = AssemblyName.GetAssemblyName(probePath);
+            if (probeAssemblyName.FullName == e.Name) {
+              Debug.WriteLine($"ResolvedAssembly '{e.Name}'", "func.exe");
+
+              return Assembly.LoadFrom(probePath);
+            }
+          }
+        }
+
+        Debug.WriteLine($"UnresolvedAssembly '{e.Name}'", "func.exe");
+        return null;
+      };
+
+      //var funcAssembly = Assembly.LoadFrom(Path.Combine(azureFunctionsCoreTools, "func.exe"));
+
+      //var pass2 = new List<Assembly>();
+
+      //foreach (var r in funcAssembly.GetReferencedAssemblies()) {
+      //  var probePaths = new[] {
+      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".dll"), // DLL first
+      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".exe"),
+      //  };
+
+      //  foreach (var probePath in probePaths) {
+      //    if (File.Exists(probePath)) {
+      //      Debug.WriteLine($"ResolvedAssembly '{r.Name}' form location '{probePath}'", "func.exe");
+      //      pass2.Add(Assembly.LoadFrom(probePath));
+      //    }
+      //  }
+      //}
+
+      //foreach (var funcAssembly2 in pass2) {
+      //  foreach (var r in funcAssembly2.GetReferencedAssemblies()) {
+      //    var probePaths = new[] {
+      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".dll"), // DLL first
+      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".exe"),
+      //  };
+
+      //    foreach (var probePath in probePaths) {
+      //      if (File.Exists(probePath)) {
+      //        Debug.WriteLine($"ResolvedAssembly '{r.Name}' form location '{probePath}'", "func.exe");
+      //        Assembly.LoadFrom(probePath);
+      //      }
+      //    }
+      //  }
+      //}
     }
 
     public static async Task LaunchAsync(string functionAppDirectory) {
@@ -50,38 +153,38 @@ namespace CloudPad.Internal {
       // the next day after I restarted all applications (not a reboot) the problem wasn't there
       // and I used procmon to note that "System.Runtime.Loader" was loaded from GAC
 
-      AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
-        Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
-        if (e.RequestingAssembly != null) {
-          Debug.WriteLine($"  RequestingAssembly '{e.RequestingAssembly}'", "func.exe");
-        }
+      //AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
+      //  Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
+      //  if (e.RequestingAssembly != null) {
+      //    Debug.WriteLine($"  RequestingAssembly '{e.RequestingAssembly}'", "func.exe");
+      //  }
 
-        //I don't remember precisly if this is useful or not, couldn't tell that it was, so...
-        //foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-        //  if (assembly.FullName == e.Name) {
-        //    Debug.WriteLine($"ResolvedAssembly '{e.Name}' from loaded set of assemblies", "func.exe");
+      //  //I don't remember precisly if this is useful or not, couldn't tell that it was, so...
+      //  //foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+      //  //  if (assembly.FullName == e.Name) {
+      //  //    Debug.WriteLine($"ResolvedAssembly '{e.Name}' from loaded set of assemblies", "func.exe");
 
-        //    return assembly;
-        //  }
-        //}
+      //  //    return assembly;
+      //  //  }
+      //  //}
 
-        var name = new AssemblyName(e.Name);
+      //  var name = new AssemblyName(e.Name);
 
-        var probePaths = new[] {
-          Path.Combine(azureFunctionsCoreTools, name.Name + ".dll"), // DLL first
-          Path.Combine(azureFunctionsCoreTools, name.Name + ".exe"),
-        };
+      //  var probePaths = new[] {
+      //    Path.Combine(azureFunctionsCoreTools, name.Name + ".dll"), // DLL first
+      //    Path.Combine(azureFunctionsCoreTools, name.Name + ".exe"),
+      //  };
 
-        foreach (var probePath in probePaths) {
-          if (File.Exists(probePath)) {
-            Debug.WriteLine($"ResolvedAssembly '{e.Name}' as '{probePath}'", "func.exe");
-            return Assembly.LoadFrom(probePath);
-          }
-        }
+      //  foreach (var probePath in probePaths) {
+      //    if (File.Exists(probePath)) {
+      //      Debug.WriteLine($"ResolvedAssembly '{e.Name}' form location '{probePath}'", "func.exe");
+      //      return Assembly.LoadFrom(probePath);
+      //    }
+      //  }
 
-        Debug.WriteLine($"UnresolvedAssembly '{e.Name}'", "func.exe");
-        return null;
-      };
+      //  Debug.WriteLine($"UnresolvedAssembly '{e.Name}'", "func.exe");
+      //  return null;
+      //};
 
       // ================
 

@@ -39,3 +39,33 @@ Under the hood, the above commands would both either/or create and deploy the Cl
 - `cpad publish script.linq`
 
 Under the hood, the above command would locate LPRun, compile the script. Locate a publishing profile and publish the script. You can download the publishing profile from the Azure Portal. Place it any where up the directory tree.
+
+# HTTP utilities
+
+```cs
+new Uri("http://localhost/").ParseQueryString()["asd"].Dump();
+new Uri("http://localhost/?asd").ParseQueryString()["asd"].Dump();
+new Uri("http://localhost/?asd=").ParseQueryString()["asd"].Dump();
+new Uri("http://localhost/?asd=123").ParseQueryString()["asd"].Dump();
+new Uri("http://localhost/?asd=123&asd=123").ParseQueryString()["asd"].Dump();
+new Uri("http://localhost/?asd=123&asd=123").ParseQueryString().GetValues("asd").Dump();
+```
+
+Make sure you have the .NET Framework 4.7.2 Developer Pack installed.
+
+https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions
+
+# Extending the Shortcut Menu for a File Type
+
+https://docs.microsoft.com/en-us/windows/desktop/shell/context#extending-the-shortcut-menu-for-a-file-type
+
+```
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\LINQPad\shell\publish]
+@="Publish LINQPad script to Azure Function"
+"Icon"="C:\\Program Files (x86)\\LINQPad5\\LINQPad.EXE,0"
+
+[HKEY_CLASSES_ROOT\LINQPad\shell\publish\command]
+@="\"C:\\Program Files (x86)\\LINQPad5\\LPRun.EXE\" \"%1\" -publish"
+```

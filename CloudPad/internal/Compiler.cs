@@ -26,7 +26,11 @@ namespace CloudPad.Internal {
   }
 
   static class Compiler {
-    public static void Compile(UserQueryTypeInfo userQuery, CompilationOptions options, QueryInfo currentQueryInfo) {
+    public static void Compile(UserQueryTypeInfo userQuery, QueryInfo currentQuery, CompilationOptions options, QueryInfo currentQueryInfo) {
+      Debug.WriteLine("==== Compiler pass begin ====", nameof(Compiler));
+
+      // ====
+
       if (options.OutDir == null) {
         throw new InvalidOperationException("Compilation option 'OutDir' cannot be null");
       }
@@ -62,8 +66,9 @@ namespace CloudPad.Internal {
         cloudPad["typeName"] = userQuery.Type.FullName;
         cloudPad["methodName"] = f.Method.Name;
 
-        if (currentQueryInfo.Provider != null) {
-          cloudPad["providerName"] = currentQueryInfo.Provider;
+        var connInfo = currentQueryInfo.GetConnectionInfo();
+        if (connInfo != null) {
+          cloudPad["providerName"] = connInfo.Provider;
           cloudPad["connectionString"] = Util.CurrentCxString;
         }
 
@@ -78,7 +83,9 @@ namespace CloudPad.Internal {
 
       // ====
 
-      var userAssemblies = LoadAllUserAssemblies(AppDomain.CurrentDomain);
+      var userAssemblies = LoadAllUserAssemblies2(userQuery, currentQuery);
+
+      // ====
 
       var lib = Path.Combine(options.OutDir, "scripts", options.QueryName + "_" + userQuery.Id);
 
@@ -97,14 +104,172 @@ namespace CloudPad.Internal {
       var root = VirtualFileSystemRoot.GetRoot();
 
       root.SaveTo(lib);
+
+      // ====
+
+      Debug.WriteLine($"==== Compiler pass end (out='{options.OutDir}') ====", nameof(Compiler));
     }
 
-    private static List<string> LoadAllUserAssemblies(AppDomain appDomain) {
+    class CandidateSet {
+      public class Candidate {
+        public string FullName => Name.FullName;
+        public AssemblyName Name { get; set; }
+        public Version Version => Name.Version;
+        public string Location { get; set; }
+        public string Source { get; set; }
+      }
+
+      public class CandidateList {
+        public List<Candidate> Candidates { get; } = new List<Candidate>();
+
+        public void Add(Candidate candidate) {
+          if (Candidates.Any(c => c.Version == candidate.Version)) {
+            return; // has version
+          }
+          Candidates.Add(candidate);
+        }
+      }
+
+      private readonly Dictionary<string, CandidateList> _d = new Dictionary<string, CandidateList>();
+
+      public IEnumerable<KeyValuePair<string, CandidateList>> Set {
+        get { return _d.OrderBy(x => x.Key); }
+      }
+
+      public void Add(string f, string source) {
+        var name = AssemblyName.GetAssemblyName(f);
+        if (!_d.TryGetValue(name.Name, out var list)) {
+          _d.Add(name.Name, list = new CandidateList());
+        }
+        list.Add(new Candidate { Name = name, Location = f, Source = source });
+      }
+    }
+
+    private static List<string> LoadAllUserAssemblies2(UserQueryTypeInfo userQuery, QueryInfo currentQuery) {
+
+      // strategy for finding what assembly version to bundle
+
+      // whenever there is a version ambiguity, we will remove the version that CloudPad referenced
+      // (multiple versions show up because users bring in different code not same)
+
+
+      var cs = new CandidateSet();
+
+      foreach (var f in currentQuery.GetFileReferences()) {
+        cs.Add(f, f);
+      }
+
+      foreach (var nuget in currentQuery.GetNuGetReferences()) {
+        var packageID = nuget.PackageID;
+        foreach (var f in nuget.GetAssemblyReferences()) {
+          cs.Add(f, packageID);
+        }
+      }
+
+      Extensions.Dump(cs);
+
+      // ====
+
+      var list = new List<Assembly> { userQuery.Assembly };
+
+      // ====
+
+      var cp = typeof(Program).Assembly; // CloudPad assembly
+
+      // ====
+
+      var excludeFullName = new HashSet<string> {
+        cp.FullName,
+      };
+      foreach (var r in cp.GetReferencedAssemblies()) {
+        excludeFullName.Add(r.FullName);
+      }
+
+      // ====
+
+      var excludeLocations = new List<string>() {
+        // Ignore stuff from LINQPad installation dir
+        CanonicalDirectoryName(Path.GetDirectoryName(Assembly.Load("LINQPad").Location)),
+
+        // Ignore stuff from azure-functions-core-tools installation dir
+        CanonicalDirectoryName(Env.GetProgramDataDirectory()), // only necessary when running from within LINQPad but it doesn't hurt
+
+        // Ignore stuff from Windows installation dir
+        CanonicalDirectoryName(Environment.GetEnvironmentVariable("WINDIR")),
+      };
+
+      bool shouldExcludeLocation(string location) {
+        foreach (var excludeLocation in excludeLocations) {
+          if (location.StartsWith(excludeLocation, StringComparison.OrdinalIgnoreCase)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // ====
+
+      void walkReferencedAssemblies(Assembly assembly) {
+        foreach (var r in assembly.GetReferencedAssemblies()) {
+          if (excludeFullName.Contains(r.FullName)) {
+            continue;
+          }
+          Debug.WriteLine($"ReferencedAssembly '{r}'", nameof(Compiler));
+          var referencedAssembly = Assembly.Load(r.FullName);
+          Debug.WriteLine($"Assembly loaded from '{referencedAssembly.Location}'", nameof(Compiler));
+          if (shouldExcludeLocation(referencedAssembly.Location)) {
+            Debug.WriteLine($"Assembly excluded by location", nameof(Compiler));
+            continue;
+          }
+          list.Add(referencedAssembly);
+          walkReferencedAssemblies(referencedAssembly);
+        }
+      }
+
+      walkReferencedAssemblies(userQuery.Assembly);
+
+      // ====
+
+      foreach (var g in list.Select(x => {
+        var name = x.GetName();
+        return new {
+          name.Name,
+          name.Version,
+          Assembly = x
+        };
+      }).GroupBy(x => x.Name).OrderBy(x => x.Key)) {
+        if (1 < g.Count()) {
+          Debug.WriteLine($"Assembly '{g.Key}' has multiple copies", nameof(Compiler));
+          foreach (var assembly in g) {
+            Debug.WriteLine($"  - '{assembly.Version}', '{assembly.Assembly.Location}'", nameof(Compiler));
+          }
+        }
+      }
+
+      // ====
+
+      return list.Select(x => x.Location).OrderBy(x => x).ToList();
+    }
+
+
+    private static List<string> LoadAllUserAssemblies(List<FunctionDescriptor> functions) {
+
+      //// This trick will ensure that the dependant assemblies get loaded
+      //foreach (var f in functions) {
+      //  System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(f.Method.MethodHandle);
+      //}
+
       var linqPadAssembly = Assembly.Load("LINQPad");
 
-      var visited = new HashSet<string> { linqPadAssembly.FullName };
+      var visited = new HashSet<string> {
+        linqPadAssembly.FullName,
 
-      foreach (var r in linqPadAssembly.GetReferencedAssemblies()) {
+        // Not supported on the desktop (but I don't understand why it's getting pulled in here)
+        "System.Runtime.Loader, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+      };
+
+      foreach (var r in linqPadAssembly.GetReferencedAssemblies().OrderBy(r => r.FullName)) {
+        Debug.WriteLine($"Ignore assembly '{r.FullName}' referenced by LINQPad");
         visited.Add(r.FullName);
       }
 
@@ -112,14 +277,17 @@ namespace CloudPad.Internal {
         if (assembly.IsDynamic) {
           return;
         }
-        foreach (var assemblyRef in assembly.GetReferencedAssemblies()) {
-          if (visited.Add(assemblyRef.FullName)) {
+        Debug.WriteLine($"Walk assembly '{assembly.FullName}'");
+        foreach (var r in assembly.GetReferencedAssemblies().OrderBy(r => r.FullName)) {
+          if (visited.Add(r.FullName)) {
+            Debug.WriteLine($"Load assembly '{r.FullName}'");
             Assembly referencedAssembly;
             try {
-              referencedAssembly = appDomain.Load(assemblyRef);
+              referencedAssembly = Assembly.Load(r);
+              Debug.WriteLine($"Assembly '{r.FullName}' loaded from location '{referencedAssembly.Location}'");
             } catch {
               // track
-              Debug.WriteLine($"Cannot load assembly '{assemblyRef}' referenced by '{assembly.GetName()}'");
+              Debug.WriteLine($"Cannot load assembly '{r}' referenced by '{assembly.GetName()}'");
               throw;
             }
             WalkReferencedAssemblies(referencedAssembly);
@@ -127,7 +295,7 @@ namespace CloudPad.Internal {
         }
       };
 
-      foreach (var assembly in appDomain.GetAssemblies()) {
+      foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
         if (visited.Add(assembly.FullName)) {
           WalkReferencedAssemblies(assembly);
         }
@@ -140,6 +308,9 @@ namespace CloudPad.Internal {
       var exclude = new[]{
           // Ignore stuff from the LINQPad installation dir
         CanonicalDirectoryName(Path.GetDirectoryName(linqPadAssembly.Location)),
+
+          // Ignore stuff from the azure-functions-core-tools installation dir
+        CanonicalDirectoryName(Env.GetProgramDataDirectory()), // only necessary when running from within LINQPad but it doesn't hurt
 
           // Ignore stuff from the Windows dir
         CanonicalDirectoryName(Environment.GetEnvironmentVariable("WINDIR")),
@@ -158,7 +329,7 @@ namespace CloudPad.Internal {
 
       var list = new List<string>();
 
-      foreach (var assembly in appDomain.GetAssemblies().OrderBy(x => x.FullName)) {
+      foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().OrderBy(x => x.FullName)) {
         if (assembly.IsDynamic) {
           continue;
         }

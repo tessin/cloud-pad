@@ -7,7 +7,7 @@ using System.Text;
 using System.Xml.Linq;
 
 namespace CloudPad.Internal {
-  class KuduClient {
+  public class KuduClient {
     private Uri _baseUrl;
     public string Host => _baseUrl.Host;
     private string _auth;

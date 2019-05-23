@@ -3,6 +3,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -34,6 +35,47 @@ namespace CloudPad.FunctionApp {
       return func;
     }
 
+    private static readonly Dictionary<string, ResolveEventHandler> _assemblyResolveHooks = new Dictionary<string, ResolveEventHandler>();
+
+    private static void UpdateAssemblyResolveHandler(string functionDir, string root) {
+      ResolveEventHandler newHandler = (sender, e) => {
+        Debug.WriteLine($"Assembly resolve '{e.Name}'", "AssemblyResolveHook");
+
+        var name = new AssemblyName(e.Name);
+
+        var probePaths = new[] {
+          Path.Combine(root, name.Name + ".dll"), // DLL first
+          Path.Combine(root, name.Name + ".exe"),
+        };
+
+        foreach (var probePath in probePaths) {
+          if (File.Exists(probePath)) {
+            var probeAssemblyName = AssemblyName.GetAssemblyName(probePath);
+            Debug.WriteLine($"Found assembly '{probeAssemblyName}' at location '{probePath}'", "AssemblyResolveHook");
+            if (probeAssemblyName.FullName == e.Name) {
+              Debug.WriteLine($"Resolved assembly '{e.Name}' from location '{probePath}'", "AssemblyResolveHook");
+              //return Assembly.LoadFrom(probePath);
+              return null;
+            }
+          } else {
+            Debug.WriteLine($"Assembly at location '{probePath}' not found", "AssemblyResolveHook");
+          }
+        }
+
+        return null;
+      };
+
+      var hooks = _assemblyResolveHooks;
+      lock (hooks) {
+        var currentDomain = AppDomain.CurrentDomain;
+        if (hooks.TryGetValue(functionDir, out var oldHandler)) {
+          currentDomain.AssemblyResolve -= oldHandler;
+        }
+        currentDomain.AssemblyResolve += newHandler;
+        hooks[functionDir] = newHandler;
+      }
+    }
+
     private static Task<FunctionExecutor> GetAsync(string functionDir, string functionJsonFileName, TraceWriter log) {
       TaskCompletionSource<FunctionExecutor> tcs;
 
@@ -59,14 +101,18 @@ namespace CloudPad.FunctionApp {
 
         log.Info($"InitializingFunction ApplicationBase='{applicationBase}', ScriptFile='{scriptFile}'", nameof(FunctionExecutor));
 
-        var fullPath = Path.GetFullPath(Path.Combine(functionDir, applicationBase, scriptFile));
+        var root = Path.GetFullPath(Path.Combine(functionDir, applicationBase));
+        var fullPath = Path.Combine(root, scriptFile);
         var dir = Path.GetDirectoryName(fullPath);
+
+        // binder...
+        UpdateAssemblyResolveHandler(functionDir, root);
 
         log.Info($"ScriptFileLoad '{fullPath}'", nameof(FunctionExecutor));
 
         var assembly = Assembly.LoadFrom(fullPath);
         var type = assembly.GetType(typeName);
-        var method = type.GetMethod(methodName);
+        var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
         var func = FunctionBinder.Bind(method);
 
         // launch cleanup task

@@ -87,9 +87,15 @@ namespace CloudPad.Internal {
         }
         var f = Bind(m);
         if (f != null) {
+          // assert that this name is not ambigous
+          try {
+            userQuery.GetMethod(m.Name, BindingFlags.Public | BindingFlags.Instance);
+          } catch (AmbiguousMatchException) {
+            throw new ApplicationException($"You have more than 1 public instance method with the name '{m.Name}' in your script. This results in an ambigous match exception. Make the non-function methods, private (or static).");
+          }
           functions.Add(f);
         } else {
-          Trace.WriteLine($"Public non-static method '{m.Name}' does not have a function trigger attribute.", nameof(FunctionBinder));
+          Trace.WriteLine($"Public non-static method '{m.Name}' (ignored) does not have a function trigger attribute. To squash this warning make the method private.", nameof(FunctionBinder));
         }
       }
 

@@ -5,9 +5,10 @@ using System.Reflection;
 namespace Tessin {
   class Options {
     public bool compile;
-    public string out_dir;
-
     public bool publish;
+    public bool prepare;
+
+    public string out_dir;
   }
 
   static class CommandLine {

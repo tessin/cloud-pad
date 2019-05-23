@@ -10,10 +10,24 @@ EndProject
 Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "func", "..\..\..\AppData\Local\CloudPad\func.1.0.19\func.exe", "{D72994B8-B379-4244-9F1C-AEE715218C37}"
 	ProjectSection(DebuggerProjectSystem) = preProject
 		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = C:\Users\leidegre\AppData\Local\CloudPad\func.1.0.19\func.exe
+		Executable = C:\ProgramData\CloudPad\func\1.0.19\func.exe
 		RemoteMachine = DESKTOP-VA266S2
 		StartingDirectory = C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad.FunctionApp\bin\Debug\net461
 		Arguments = host start
+		Environment = Default
+		LaunchingEngine = fb0d4648-f776-4980-95f8-bb7f36ebc1ee
+		UseLegacyDebugEngines = No
+		LaunchSQLEngine = No
+		AttachLaunchAction = No
+	EndProjectSection
+EndProject
+Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "LPRun", "..\..\..\..\..\Program Files (x86)\LINQPad5\LPRun.exe", "{E5627396-C7D4-48FC-AE59-6EC6BFA98287}"
+	ProjectSection(DebuggerProjectSystem) = preProject
+		PortSupplier = 00000000-0000-0000-0000-000000000000
+		Executable = C:\Program Files (x86)\LINQPad5\LPRun.exe
+		RemoteMachine = DESKTOP-VNE5CKC
+		StartingDirectory = C:\Users\leidegre\Desktop\neils
+		Arguments = Banners_Partner.linq
 		Environment = Default
 		LaunchingEngine = fb0d4648-f776-4980-95f8-bb7f36ebc1ee
 		UseLegacyDebugEngines = No
@@ -61,6 +75,12 @@ Global
 		{D72994B8-B379-4244-9F1C-AEE715218C37}.Release|Any CPU.ActiveCfg = Release|x86
 		{D72994B8-B379-4244-9F1C-AEE715218C37}.Release|x64.ActiveCfg = Release|x86
 		{D72994B8-B379-4244-9F1C-AEE715218C37}.Release|x86.ActiveCfg = Release|x86
+		{E5627396-C7D4-48FC-AE59-6EC6BFA98287}.Debug|Any CPU.ActiveCfg = Release|x86
+		{E5627396-C7D4-48FC-AE59-6EC6BFA98287}.Debug|x64.ActiveCfg = Release|x86
+		{E5627396-C7D4-48FC-AE59-6EC6BFA98287}.Debug|x86.ActiveCfg = Release|x86
+		{E5627396-C7D4-48FC-AE59-6EC6BFA98287}.Release|Any CPU.ActiveCfg = Release|x86
+		{E5627396-C7D4-48FC-AE59-6EC6BFA98287}.Release|x64.ActiveCfg = Release|x86
+		{E5627396-C7D4-48FC-AE59-6EC6BFA98287}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

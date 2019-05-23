@@ -2,19 +2,5 @@
   {
     "command": "dotnet",
     "args": ["build", "cloud-pad.sln"]
-  },
-  {
-    "command": "lprun",
-    "args": [
-      "scripts\\test.linq",
-      "--compile",
-      "--compile-out-dir",
-      "CloudPad.FunctionApp\\bin\\Debug\\net461"
-    ]
-  },
-  {
-    "command": "node_modules\\azure-functions-core-tools\\bin\\func.exe",
-    "args": ["host", "start"],
-    "cwd": "CloudPad.FunctionApp\\bin\\Debug\\net461"
   }
 ]

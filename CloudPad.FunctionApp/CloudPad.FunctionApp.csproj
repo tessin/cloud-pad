@@ -5,6 +5,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>CloudPad Azure Function Runtime</Description>
+    <RootNamespace>CloudPad</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
