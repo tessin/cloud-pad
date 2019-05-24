@@ -67,5 +67,18 @@ Windows Registry Editor Version 5.00
 "Icon"="C:\\Program Files (x86)\\LINQPad5\\LINQPad.EXE,0"
 
 [HKEY_CLASSES_ROOT\LINQPad\shell\publish\command]
-@="\"C:\\Program Files (x86)\\LINQPad5\\LPRun.EXE\" \"%1\" -publish"
+@=""
 ```
+
+# LINQPad Version
+
+`5.36.03`
+
+# CloudPad 3
+
+CloudPad 3 will target .NET Core 3 and LINQPad 6
+
+# Func 1.0.19
+
+see https://github.com/Azure/azure-functions-core-tools/blob/1.0.19/src/Azure.Functions.Cli/Azure.Functions.Cli.csproj
+

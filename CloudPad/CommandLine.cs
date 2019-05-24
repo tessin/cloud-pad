@@ -7,6 +7,7 @@ namespace Tessin {
     public bool compile;
     public bool publish;
     public bool prepare;
+    public bool install;
 
     public string out_dir;
   }

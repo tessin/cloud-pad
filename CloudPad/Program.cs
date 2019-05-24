@@ -39,6 +39,8 @@ namespace CloudPad {
       var LPRun = false;
       if ("LPRun.exe".Equals(Process.GetCurrentProcess().MainModule.ModuleName, StringComparison.OrdinalIgnoreCase)) {
         LPRun = true;
+
+        // pipe trace to console
         Trace.Listeners.Add(new ConsoleTraceListener());
       }
 
@@ -64,6 +66,10 @@ namespace CloudPad {
       args = args ?? new string[0]; // note: `args` can be null
       if (args.Length == 0) {
         // todo: storage emulator?
+
+        if (FirstRun.ShouldPrompt()) {
+          FirstRun.Prompt();
+        }
 
         var workingDirectory = Path.Combine(Env.GetLocalAppDataDirectory(), currentQueryPathInfo.InstanceId);
 
@@ -109,6 +115,9 @@ namespace CloudPad {
             FunctionApp.Deploy(compilationOptions.OutDir);
             Compiler.Compile(userQueryInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
             Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
+            return 0;
+          } else if(options.install) {
+            FirstRun.Install();
             return 0;
           }
         } catch (Exception ex) {

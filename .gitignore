@@ -4,3 +4,4 @@ obj
 *.user
 node_modules
 *.PublishSettings
+*_*

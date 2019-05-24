@@ -1,6 +1,8 @@
 using CloudPad.Internal;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -22,7 +24,16 @@ namespace CloudPad.FunctionApp {
       arguments.AddArgument(typeof(TraceWriter), log);
       arguments.AddArgument(typeof(ILogger), new TraceWriterLogger(log));
 
-      var result = await func.InvokeAsync(arguments, log);
+      object result;
+      try {
+        result = await func.InvokeAsync(arguments, log);
+      } catch (ArgumentException ex) {
+        // special sauce for HTTP trigger
+        log.Error(ex.Message, ex);
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { ok = false, message = ex.Message });
+      } catch {
+        throw;
+      }
 
       var taskWithValue = result as Task<HttpResponseMessage>;
       if (taskWithValue != null) {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -28,48 +27,15 @@ namespace CloudPad.Internal {
       return funcDir;
     }
 
-    public static void Prepare() {
+    public static string Prepare() {
       // this should be done exactly once before any call to `LaunchAsync`
 
       var azureFunctionsCoreTools = GetAzureFunctionsCoreTools("1.0.19");
 
-      var funcConfig = System.Xml.Linq.XElement.Load(Path.Combine(azureFunctionsCoreTools, "func.exe.config"));
-      var runtime = funcConfig.Element("runtime");
-
-      var assemblyBindingRedirects = new Dictionary<string, object>();
-
-      System.Xml.Linq.XNamespace ns = "urn:schemas-microsoft-com:asm.v1";
-      var assemblyBinding = runtime.Element(ns + "assemblyBinding");
-      var assemblyIdentityName = ns + "assemblyIdentity";
-      var bindingRedirectName = ns + "bindingRedirect";
-      foreach (var dependentAssembly in assemblyBinding.Elements(ns + "dependentAssembly")) {
-        var assemblyIdentity = dependentAssembly.Element(assemblyIdentityName);
-
-        var fullName = (string)assemblyIdentity.Attribute("name");
-
-        if ((string)assemblyIdentity.Attribute("culture") != null) {
-          fullName += ", Culture=" + (string)assemblyIdentity.Attribute("culture");
-        }
-
-        if ((string)assemblyIdentity.Attribute("publicKeyToken") != null) {
-          fullName += ", PublicKeyToken=" + new StrongNameKeyPair((string)assemblyIdentity.Attribute("publicKeyToken"));
-        }
-
-        var assemblyName = new AssemblyName(fullName);
-
-        var bindingRedirect = dependentAssembly.Element(bindingRedirectName);
-        var oldVersion = ((string)bindingRedirect.Attribute("oldVersion")).Split('-');
-        assemblyBindingRedirects[assemblyName.FullName] = new {
-          minVersion = new Version(oldVersion[0]),
-          maxVersion = new Version(oldVersion[1]),
-          newVersion = new Version((string)bindingRedirect.Attribute("newVersion")),
-        };
-      }
-
-      Extensions.Dump(assemblyBindingRedirects);
+      var assemblyBindings = AssemblyBindingConfig.LoadFrom(Path.Combine(azureFunctionsCoreTools, "func.exe.config"));
 
       AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
-        // note: e.RequestingAssembly is always null (for some reason?)
+        // note: e.RequestingAssembly is always null (we don't need it and shouldn't use it)
 
         Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
 
@@ -82,10 +48,19 @@ namespace CloudPad.Internal {
 
         foreach (var probePath in probePaths) {
           if (File.Exists(probePath)) {
-            var probeAssemblyName = AssemblyName.GetAssemblyName(probePath);
-            if (probeAssemblyName.FullName == e.Name) {
-              Debug.WriteLine($"ResolvedAssembly '{e.Name}'", "func.exe");
+            var probeName = AssemblyName.GetAssemblyName(probePath);
 
+            // look for redirect
+            var bindingRedirect = assemblyBindings.Find(probeName);
+            if (bindingRedirect != null) {
+              if (bindingRedirect.NewVersion == probeName.Version) {
+                Debug.WriteLine($"ResolvedAssembly '{e.Name}'", "func.exe");
+                return Assembly.LoadFrom(probePath);
+              }
+            }
+
+            if (probeName.FullName == e.Name) {
+              Debug.WriteLine($"ResolvedAssembly '{e.Name}'", "func.exe");
               return Assembly.LoadFrom(probePath);
             }
           }
@@ -95,125 +70,52 @@ namespace CloudPad.Internal {
         return null;
       };
 
-      //var funcAssembly = Assembly.LoadFrom(Path.Combine(azureFunctionsCoreTools, "func.exe"));
-
-      //var pass2 = new List<Assembly>();
-
-      //foreach (var r in funcAssembly.GetReferencedAssemblies()) {
-      //  var probePaths = new[] {
-      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".dll"), // DLL first
-      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".exe"),
-      //  };
-
-      //  foreach (var probePath in probePaths) {
-      //    if (File.Exists(probePath)) {
-      //      Debug.WriteLine($"ResolvedAssembly '{r.Name}' form location '{probePath}'", "func.exe");
-      //      pass2.Add(Assembly.LoadFrom(probePath));
-      //    }
-      //  }
-      //}
-
-      //foreach (var funcAssembly2 in pass2) {
-      //  foreach (var r in funcAssembly2.GetReferencedAssemblies()) {
-      //    var probePaths = new[] {
-      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".dll"), // DLL first
-      //    Path.Combine(azureFunctionsCoreTools, r.Name + ".exe"),
-      //  };
-
-      //    foreach (var probePath in probePaths) {
-      //      if (File.Exists(probePath)) {
-      //        Debug.WriteLine($"ResolvedAssembly '{r.Name}' form location '{probePath}'", "func.exe");
-      //        Assembly.LoadFrom(probePath);
-      //      }
-      //    }
-      //  }
-      //}
+      return azureFunctionsCoreTools;
     }
 
     public static async Task LaunchAsync(string functionAppDirectory) {
       // StartHostAction.RunAsync
       // https://github.com/Azure/azure-functions-core-tools/blob/1.0.19/src/Azure.Functions.Cli/Actions/HostActions/StartHostAction.cs#L102-L143
 
-      // The code does this based on the 1.0.19 release of the azure-functions-core-tools
-      // We use reflection so that the CloudPad assembly (and NuGet package) doesn't depend on
-      // the job host
-
-      // the primary reasons are
-      //  1. type ambiguity
-      //  2. file size
+      // ================
 
       var azureFunctionsCoreTools = GetAzureFunctionsCoreTools("1.0.19");
 
       // ================
 
-      // this implementation is worth revising with respect to the following documentation
-      // https://docs.microsoft.com/en-us/dotnet/framework/app-domains/resolve-assembly-loads?view=netframework-4.8
-
-      // for some reason, I ran into a failure to resolve "System.Runtime.Loader"
-      // the next day after I restarted all applications (not a reboot) the problem wasn't there
-      // and I used procmon to note that "System.Runtime.Loader" was loaded from GAC
-
-      //AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
-      //  Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
-      //  if (e.RequestingAssembly != null) {
-      //    Debug.WriteLine($"  RequestingAssembly '{e.RequestingAssembly}'", "func.exe");
-      //  }
-
-      //  //I don't remember precisly if this is useful or not, couldn't tell that it was, so...
-      //  //foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-      //  //  if (assembly.FullName == e.Name) {
-      //  //    Debug.WriteLine($"ResolvedAssembly '{e.Name}' from loaded set of assemblies", "func.exe");
-
-      //  //    return assembly;
-      //  //  }
-      //  //}
-
-      //  var name = new AssemblyName(e.Name);
-
-      //  var probePaths = new[] {
-      //    Path.Combine(azureFunctionsCoreTools, name.Name + ".dll"), // DLL first
-      //    Path.Combine(azureFunctionsCoreTools, name.Name + ".exe"),
-      //  };
-
-      //  foreach (var probePath in probePaths) {
-      //    if (File.Exists(probePath)) {
-      //      Debug.WriteLine($"ResolvedAssembly '{e.Name}' form location '{probePath}'", "func.exe");
-      //      return Assembly.LoadFrom(probePath);
-      //    }
-      //  }
-
-      //  Debug.WriteLine($"UnresolvedAssembly '{e.Name}'", "func.exe");
-      //  return null;
-      //};
-
-      // ================
-
       var funcAssembly = Assembly.LoadFrom(Path.Combine(azureFunctionsCoreTools, "func.exe"));
 
+      Debug.WriteLine("new StartHostAction();", "func.exe");
       var startHostAction = funcAssembly.GetType("Azure.Functions.Cli.Actions.HostActions.StartHostAction");
       var action = Activator.CreateInstance(startHostAction, new object[] { null });
 
       // Utilities.PrintLogo(); // skip this, the log is spammy enough as it is
 
+      Debug.WriteLine("var scriptPath = ScriptHostHelpers.GetFunctionAppRootDirectory(...);", "func.exe");
       var scriptHostHelpers = funcAssembly.GetType("Azure.Functions.Cli.Helpers.ScriptHostHelpers");
       var getFunctionAppRootDirectory = scriptHostHelpers.GetMethod("GetFunctionAppRootDirectory", BindingFlags.Public | BindingFlags.Static);
-      var getTraceLevel = scriptHostHelpers.GetMethod("GetTraceLevel", BindingFlags.NonPublic | BindingFlags.Static);
       var scriptPath = getFunctionAppRootDirectory.Invoke(null, new object[] { functionAppDirectory });
+
+      Debug.WriteLine("var traceLevel = await ScriptHostHelpers.GetTraceLevel(scriptPath);", "func.exe");
+      var getTraceLevel = scriptHostHelpers.GetMethod("GetTraceLevel", BindingFlags.NonPublic | BindingFlags.Static);
       var traceLevelTask = (Task)getTraceLevel.Invoke(null, new object[] { scriptPath });
       await traceLevelTask;
       var traceLevel = GetTaskResult(traceLevelTask);
 
+      Debug.WriteLine("var settings = SelfHostWebHostSettingsFactory.Create(traceLevel, scriptPath);", "func.exe");
       var selfHostWebHostSettingsFactory = funcAssembly.GetType("Azure.Functions.Cli.Common.SelfHostWebHostSettingsFactory");
       var create = selfHostWebHostSettingsFactory.GetMethod("Create", BindingFlags.Public | BindingFlags.Static);
       var settings = create.Invoke(null, new object[] { traceLevel, scriptPath });
 
-      // Setup(); // skip this, it just does some URLACL validation with an ugly popup
+      // Setup(); // skip
       var baseAddress = new Uri("http://localhost:7071/");
 
-      // ReadSecrets(scriptPath, baseAddress); // skip this, it's hardcoded to use Environment.CurrentDirectory
+      // hardcoded to use Environment.CurrentDirectory
+      // ReadSecrets(scriptPath, baseAddress);  // skip
 
       var selfHostAssembly = Assembly.LoadFrom(Path.Combine(azureFunctionsCoreTools, "System.Web.Http.SelfHost.dll"));
 
+      Debug.WriteLine("var config = new HttpSelfHostConfiguration(baseAddress);", "func.exe");
       var httpSelfHostConfiguration = selfHostAssembly.GetType("System.Web.Http.SelfHost.HttpSelfHostConfiguration");
       var config = Activator.CreateInstance(httpSelfHostConfiguration, new object[] { baseAddress });
       httpSelfHostConfiguration.GetProperty("IncludeErrorDetailPolicy").SetValue(config, 2); // Always

@@ -20,7 +20,7 @@ namespace CloudPad {
     }
 
     Type[] ITriggerAttribute.GetRequiredParameterTypes() {
-      throw new NotImplementedException();
+      return new[] { typeof(Microsoft.WindowsAzure.Storage.Blob.CloudBlockBlob) };
     }
   }
 }
