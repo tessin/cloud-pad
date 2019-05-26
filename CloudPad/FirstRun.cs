@@ -63,7 +63,7 @@ namespace CloudPad {
           publish.SetValue("", "Publish LINQPad script to Azure");
           publish.SetValue("Icon", @"C:\\Program Files (x86)\\LINQPad5\\LINQPad.EXE,0");
           using (var command = publish.CreateSubKey("command", true)) {
-            command.SetValue("", "\"C:\\Program Files (x86)\\LINQPad5\\LPRun.EXE\" \"%1\" -publish");
+            command.SetValue("", "\"C:\\Program Files (x86)\\LINQPad5\\LPRun.EXE\" \"%1\" -publish -keep-alive");
           }
         }
       }

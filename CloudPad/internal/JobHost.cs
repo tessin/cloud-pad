@@ -15,7 +15,7 @@ namespace CloudPad.Internal {
       if (!File.Exists(funcFileName)) {
         Directory.CreateDirectory(funcDir);
         var azureFunctionsCliZip = funcDir + ".zip";
-        var req = WebRequest.Create($"https://functionscdn.azureedge.net/public/{version}/Azure.Functions.Cli.zip");
+        var req = WebRequest.Create($"https://github.com/tessin/cloud-pad/releases/download/2.0.0/Azure.Functions.Cli.{version}-net461.zip");
         using (var res = req.GetResponse()) {
           using (var zip = File.Create(azureFunctionsCliZip)) {
             res.GetResponseStream().CopyTo(zip);
@@ -27,24 +27,27 @@ namespace CloudPad.Internal {
       return funcDir;
     }
 
-    public static string Prepare() {
-      // this should be done exactly once before any call to `LaunchAsync`
+    public static async Task LaunchAsync(string functionAppDirectory) {
+      // StartHostAction.RunAsync
+      // https://github.com/Azure/azure-functions-core-tools/blob/1.0.19/src/Azure.Functions.Cli/Actions/HostActions/StartHostAction.cs#L102-L143
+
+      // ================
 
       var azureFunctionsCoreTools = GetAzureFunctionsCoreTools("1.0.19");
+
+      // ================
 
       var assemblyBindings = AssemblyBindingConfig.LoadFrom(Path.Combine(azureFunctionsCoreTools, "func.exe.config"));
 
       AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
-        // note: e.RequestingAssembly is always null (we don't need it and shouldn't use it)
-
         Debug.WriteLine($"AssemblyResolve '{e.Name}'", "func.exe");
 
         var name = new AssemblyName(e.Name);
 
         var probePaths = new[] {
-          Path.Combine(azureFunctionsCoreTools, name.Name + ".dll"), // DLL first
-          Path.Combine(azureFunctionsCoreTools, name.Name + ".exe"),
-        };
+            Path.Combine(azureFunctionsCoreTools, name.Name + ".dll"), // DLL first
+            Path.Combine(azureFunctionsCoreTools, name.Name + ".exe"),
+          };
 
         foreach (var probePath in probePaths) {
           if (File.Exists(probePath)) {
@@ -69,17 +72,6 @@ namespace CloudPad.Internal {
         Debug.WriteLine($"UnresolvedAssembly '{e.Name}'", "func.exe");
         return null;
       };
-
-      return azureFunctionsCoreTools;
-    }
-
-    public static async Task LaunchAsync(string functionAppDirectory) {
-      // StartHostAction.RunAsync
-      // https://github.com/Azure/azure-functions-core-tools/blob/1.0.19/src/Azure.Functions.Cli/Actions/HostActions/StartHostAction.cs#L102-L143
-
-      // ================
-
-      var azureFunctionsCoreTools = GetAzureFunctionsCoreTools("1.0.19");
 
       // ================
 
@@ -134,7 +126,7 @@ namespace CloudPad.Internal {
       // todo: Environment.SetEnvironmentVariable("EDGE_NODE_PARAMS", $"--debug={NodeDebugPort}", EnvironmentVariableTarget.Process);
 
       Debug.WriteLine("WebApiConfig.Initialize(config, settings: settings);", "func.exe");
-      var webHostAssembly = Assembly.LoadFile(Path.Combine(azureFunctionsCoreTools, "Microsoft.Azure.WebJobs.Script.WebHost.dll"));
+      var webHostAssembly = Assembly.LoadFrom(Path.Combine(azureFunctionsCoreTools, "Microsoft.Azure.WebJobs.Script.WebHost.dll"));
       var webApiConfig = webHostAssembly.GetType("Microsoft.Azure.WebJobs.Script.WebHost.WebApiConfig");
       var initialize = webApiConfig.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
       initialize.Invoke(null, new object[] { config, null, settings, null });

@@ -9,6 +9,8 @@ namespace Tessin {
     public bool prepare;
     public bool install;
 
+    public bool keep_alive;
+
     public string out_dir;
   }
 

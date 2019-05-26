@@ -78,7 +78,8 @@ Windows Registry Editor Version 5.00
 
 CloudPad 3 will target .NET Core 3 and LINQPad 6
 
-# Func 1.0.19
+# azure-functions-core-tools
 
-see https://github.com/Azure/azure-functions-core-tools/blob/1.0.19/src/Azure.Functions.Cli/Azure.Functions.Cli.csproj
+After much headache. Specifically around `System.Net.Http` the version that is shipping with the Azure Function Runtime 1.0.19 is from the .NET Framework 4.7.1. You need to provide assembly binding redirects to work around this issue.
 
+I used a LINQPad script `func.linq` to rewrite the assembly reference metadata to be compatible with CloudPad. Then repackage the `Azure.Functions.Cli` tooling for this to work out of the box.

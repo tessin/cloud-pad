@@ -1,0 +1,258 @@
+'LPRun.exe' (CLR v4.0.30319: DefaultDomain): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_32\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: DefaultDomain): Loaded 'C:\Program Files (x86)\LINQPad5\LPRun.exe'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\Program Files (x86)\LINQPad5\LINQPad.exe'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Drawing\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Drawing.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Configuration\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Configuration.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'Resources'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'LINQPad.Common'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xml.Linq\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.Linq.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_32\PresentationCore\v4.0_4.0.0.0__31bf3856ad364e35\PresentationCore.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\WindowsBase\v4.0_4.0.0.0__31bf3856ad364e35\WindowsBase.dll'. Cannot find or open the PDB file.
+The thread 0x4288 has exited with code 0 (0x0).
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms\v4.0_4.0.0.0__b77a5c561934e089\System.Windows.Forms.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\Users\leidegre\AppData\Local\Temp\VisualStudio.XamlDiagnostics.27084\Microsoft.VisualStudio.DesignTools.WpfTap.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\PresentationFramework\v4.0_4.0.0.0__31bf3856ad364e35\PresentationFramework.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xaml\v4.0_4.0.0.0__b77a5c561934e089\System.Xaml.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Serialization\v4.0_4.0.0.0__b77a5c561934e089\System.Runtime.Serialization.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\SMDiagnostics\v4.0_4.0.0.0__b77a5c561934e089\SMDiagnostics.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'NuGet'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.ServiceModel.Internals\v4.0_4.0.0.0__31bf3856ad364e35\System.ServiceModel.Internals.dll'. Cannot find or open the PDB file.
+The thread 0x1f94 has exited with code 0 (0x0).
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Security\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Security.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\Microsoft.CSharp\v4.0_4.0.0.0__b03f5f7f11d50a3a\Microsoft.CSharp.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Data.Linq\v4.0_4.0.0.0__b77a5c561934e089\System.Data.Linq.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_32\System.Data\v4.0_4.0.0.0__b77a5c561934e089\System.Data.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'APS.SyntaxEditor.WinForms'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'APS.Shared.WinForms'. Module was built without symbols.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Data.Entity\v4.0_4.0.0.0__b77a5c561934e089\System.Data.Entity.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\Program Files (x86)\LINQPad5\ngen006\Microsoft.CodeAnalysis.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'Hyperlinq'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\Accessibility\v4.0_4.0.0.0__b03f5f7f11d50a3a\Accessibility.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\UIAutomationProvider\v4.0_4.0.0.0__31bf3856ad364e35\UIAutomationProvider.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\Microsoft.Build.Utilities.v4.0\v4.0_4.0.0.0__b03f5f7f11d50a3a\Microsoft.Build.Utilities.v4.0.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\Microsoft.Build.Framework\v4.0_4.0.0.0__b03f5f7f11d50a3a\Microsoft.Build.Framework.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.ComponentModel.DataAnnotations\v4.0_4.0.0.0__31bf3856ad364e35\System.ComponentModel.DataAnnotations.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Net.Http\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Net.Http.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Runtime.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\Program Files (x86)\LINQPad5\ngen006\System.Collections.Immutable.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Threading.Tasks\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Threading.Tasks.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\Program Files (x86)\LINQPad5\ngen006\Microsoft.CodeAnalysis.CSharp.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Text.Encoding\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Text.Encoding.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.IO\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.IO.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Extensions\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Runtime.Extensions.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Threading\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Threading.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Collections\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Collections.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Globalization\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Globalization.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\Program Files (x86)\LINQPad5\ngen006\System.Reflection.Metadata.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'System.IO.FileSystem'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Reflection\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Reflection.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.IO.FileSystem\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.IO.FileSystem.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.InteropServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Runtime.InteropServices.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.ValueTuple\v4.0_4.0.0.0__cc7b13ffcd2ddd51\System.ValueTuple.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'System.Security.Cryptography.Algorithms'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Threading.Tasks.Parallel\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Threading.Tasks.Parallel.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Reflection.Primitives\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Reflection.Primitives.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Linq\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Linq.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Collections.Concurrent\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Collections.Concurrent.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Text.Encoding.Extensions\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Text.Encoding.Extensions.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Reflection.Extensions\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Reflection.Extensions.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'System.Security.Cryptography.Primitives'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xml.XDocument\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Xml.XDocument.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Resources.ResourceManager\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Resources.ResourceManager.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.IO.MemoryMappedFiles\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.IO.MemoryMappedFiles.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LPRun.exe): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Handles\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Runtime.Handles.dll'. Cannot find or open the PDB file.
+Exception thrown: 'System.DllNotFoundException' in Microsoft.CodeAnalysis.dll
+'LPRun.exe' (CLR v4.0.30319: Domain 2): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_32\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Program Files (x86)\LINQPad5\LINQPad.exe'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms\v4.0_4.0.0.0__b77a5c561934e089\System.Windows.Forms.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Drawing\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Drawing.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Configuration\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Configuration.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'LINQPad.Common'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'Resources'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Xml.Linq\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.Linq.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Data.Linq\v4.0_4.0.0.0__b77a5c561934e089\System.Data.Linq.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\AppData\Local\Temp\LINQPad5\_qfoummqz\query_gkjsot.dll'. Symbols loaded.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\RazorEdge\Microsoft.CodeAnalysis.Common.2.6.1\lib\netstandard1.3\Microsoft.CodeAnalysis.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\Mandrill\System.Runtime.4.3.0\lib\net462\System.Runtime.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\RazorEdge\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\System.Net.Http 4.3.3\System.Net.Http.4.3.3\lib\net46\System.Net.Http.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\Airtable\Airtable.1.0.2\lib\netstandard2.0\AirtableApiClient.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\netstandard\v4.0_2.0.0.0__cc7b13ffcd2ddd51\netstandard.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\CloudPad.dll'. Symbols loaded.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\Mandrill\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.IO.Compression.FileSystem\v4.0_4.0.0.0__b77a5c561934e089\System.IO.Compression.FileSystem.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\Newtonsoft.Json.dll'. Cannot find or open the PDB file.
+Compiler: ==== Compiler pass begin ====
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_32\System.Data\v4.0_4.0.0.0__b77a5c561934e089\System.Data.dll'. Cannot find or open the PDB file.
+FunctionBinder: Public non-static method 'BuildDocument' (ignored) does not have a function trigger attribute. To squash this warning make the method private.
+FunctionBinder: Public non-static method 'ToObject' (ignored) does not have a function trigger attribute. To squash this warning make the method private.
+FunctionBinder: Public non-static method 'GetTemplate' (ignored) does not have a function trigger attribute. To squash this warning make the method private.
+FunctionBinder: Public non-static method 'SendEmail' (ignored) does not have a function trigger attribute. To squash this warning make the method private.
+FunctionBinder: Found 1 function(s).
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Numerics\v4.0_4.0.0.0__b77a5c561934e089\System.Numerics.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Serialization\v4.0_4.0.0.0__b77a5c561934e089\System.Runtime.Serialization.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\SMDiagnostics\v4.0_4.0.0.0__b77a5c561934e089\SMDiagnostics.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.ServiceModel.Internals\v4.0_4.0.0.0__31bf3856ad364e35\System.ServiceModel.Internals.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\Mandrill\Mandrill.3.1.0\lib\netstandard1.1\Mandrill.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\RazorEdge.PdfClient\RazorEdge.PdfClient.1.0.1\lib\net461\RazorEdge.PdfClient.dll'. Symbols loaded.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\System.Web.Http.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\Microsoft.CSharp\v4.0_4.0.0.0__b03f5f7f11d50a3a\Microsoft.CSharp.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\NuGet.FW46\FW46\RazorEdge\RazorEdge.2.1.0\lib\net461\RazorEdge.dll'. Symbols loaded.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'NuGet'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Security\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Security.dll'. Cannot find or open the PDB file.
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Numerics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
+Unref: Unref 'System.Runtime.Serialization, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.ServiceModel.Internals, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'SMDiagnostics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
+Unref: Unref 'System.Runtime.Serialization, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.WindowsAzure.Storage, Version=7.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Load 'Microsoft.WindowsAzure.Storage, Version=7.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\Microsoft.WindowsAzure.Storage.dll'. Cannot find or open the PDB file.
+Unref: Loaded 'Microsoft.WindowsAzure.Storage, Version=7.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Data.Services.Client, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Load 'Microsoft.Data.Services.Client, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\Microsoft.Data.Services.Client.dll'. Cannot find or open the PDB file.
+Unref: Loaded 'Microsoft.Data.Services.Client, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Load 'Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\Microsoft.Data.Edm.dll'. Cannot find or open the PDB file.
+Unref: Loaded 'Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Load 'Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\Microsoft.Data.OData.dll'. Cannot find or open the PDB file.
+Unref: Loaded 'Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Load 'System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\System.Spatial.dll'. Cannot find or open the PDB file.
+Unref: Loaded 'System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Load 'Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\Microsoft.Azure.KeyVault.Core.dll'. Cannot find or open the PDB file.
+Unref: Loaded 'Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed'
+Unref: Load 'Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed'
+Unref: Loaded 'Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed'
+Unref: Unref 'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
+Unref: Load 'System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
+Unref: Loaded 'System.Net.Http, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'
+Unref: Unref 'System.IO.Compression.FileSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Unref: Unref 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Warning: Multiple versions of assembly 'Newtonsoft.Json' found.
+Warning: Assembly 'Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed' from location 'C:\NuGet.FW46\FW46\Airtable\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll' used.
+Warning: The following verion(s) will not be used:
+Warning:   Assembly 'Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed' from location 'C:\NuGet.FW46\FW46\Mandrill\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll' ignored.
+Warning: Multiple versions of assembly 'System.Net.Http' found.
+Warning: Assembly 'System.Net.Http, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' from location 'C:\NuGet.FW46\FW46\System.Net.Http 4.3.3\System.Net.Http.4.3.3\lib\net46\System.Net.Http.dll' used.
+Warning: The following verion(s) will not be used:
+Warning:   Assembly 'System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' from location 'C:\NuGet.FW46\FW46\Mandrill\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll' ignored.
+Warning: Multiple versions of assembly 'System.ValueTuple' found.
+Warning: Assembly 'System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' from location 'C:\NuGet.FW46\FW46\RazorEdge\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll' used.
+Warning: The following verion(s) will not be used:
+Warning:   Assembly 'System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' from location 'C:\NuGet.FW46\FW46\System.ValueTuple\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll' ignored.
+Compiler: ==== Compiler pass end, OutDir= C:\Users\leidegre\AppData\Local\CloudPad\4c4e47e61bc05820bb60c096c486f7aa77077cfde28cd20cc9e510d364fba9b3 ====
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\func.exe'. Cannot find or open the PDB file.
+func.exe: new StartHostAction();
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\FluentCommandLineParser.dll'. Cannot find or open the PDB file.
+func.exe: var scriptPath = ScriptHostHelpers.GetFunctionAppRootDirectory(...);
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\System.IO.Abstractions.dll'. Cannot find or open the PDB file.
+func.exe: var traceLevel = await ScriptHostHelpers.GetTraceLevel(scriptPath);
+func.exe: var settings = SelfHostWebHostSettingsFactory.Create(traceLevel, scriptPath);
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Azure.WebJobs.Script.WebHost.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Colors.Net.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Azure.WebJobs.Host.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Azure.WebJobs.Script.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Extensions.Logging.Abstractions.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\System.Web.Http.SelfHost.dll'. Cannot find or open the PDB file.
+func.exe: var config = new HttpSelfHostConfiguration(baseAddress);
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.ServiceModel\v4.0_4.0.0.0__b77a5c561934e089\System.ServiceModel.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.IdentityModel\v4.0_4.0.0.0__b77a5c561934e089\System.IdentityModel.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\bin\Debug\net461\System.Net.Http.Formatting.dll'. Cannot find or open the PDB file.
+func.exe: config.Formatters.Add(new JsonMediaTypeFormatter());
+func.exe: WebApiConfig.Initialize(config, settings: settings);
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Autofac.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\System.Net.Http\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Net.Http.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Autofac.Integration.WebApi.dll'. Cannot find or open the PDB file.
+func.exe: AssemblyResolve 'Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da'
+func.exe: ResolvedAssembly 'Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da'
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Generic.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Azure.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Pusher.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Stripe.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Trello.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.DynamicsCRM.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.MailChimp.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Slack.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Bitbucket.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Dropbox.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.WordPress.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.GitHub.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.Salesforce.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Azure.AppService.Proxy.Common.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\WINDOWS\Microsoft.Net\assembly\GAC_32\System.Web\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Web.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Azure.WebJobs.Extensions.Http.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.AspNet.WebHooks.Receivers.dll'. Cannot find or open the PDB file.
+'LPRun.exe' (CLR v4.0.30319: LINQPad Query Server [TDG]): Loaded 'C:\ProgramData\CloudPad\func\1.0.19\Microsoft.Azure.WebJobs.dll'. Cannot find or open the PDB file.
+Exception thrown: 'System.MissingMethodException' in Microsoft.Azure.WebJobs.Script.WebHost.dll
+Method not found: 'System.Collections.ObjectModel.Collection`1<System.Net.Http.Headers.MediaTypeHeaderValue> System.Net.Http.Formatting.MediaTypeFormatter.get_SupportedMediaTypes()'.
+
+Put it in the GAC, resistance is futile. Or solve the problem the programmer's way: decompile the assembly with ildasm.exe, change the .assembly directive, put back together with ildasm.exe

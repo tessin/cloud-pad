@@ -4,11 +4,15 @@ using System.Linq;
 using System.Reflection;
 
 namespace CloudPad.Internal {
-  class AssemblyCandidate {
+  class AssemblyCandidate : IComparable<AssemblyCandidate> {
     public string FullName => Name.FullName;
     public AssemblyName Name { get; set; }
     public string Location { get; set; }
     public string Source { get; set; }
+
+    public int CompareTo(AssemblyCandidate other) {
+      return this.Name.Version.CompareTo(other.Name.Version); // descending, highest version first
+    }
   }
 
   class AssemblyCandidateSet {
@@ -25,9 +29,10 @@ namespace CloudPad.Internal {
         _d.Add(name.Name, list = new List<AssemblyCandidate>());
       }
 
-      var candidiate = list.Find(c => c.FullName == name.FullName);
-      if (candidiate == null) {
-        list.Add(new AssemblyCandidate { Location = location, Name = name, Source = source });
+      var candidiate = new AssemblyCandidate { Location = location, Name = name, Source = source };
+      var index = list.BinarySearch(candidiate);
+      if (index < 0) {
+        list.Insert(~index, candidiate);
       }
     }
 

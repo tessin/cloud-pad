@@ -37,10 +37,15 @@ namespace CloudPad.FunctionApp {
 
       var taskWithValue = result as Task<HttpResponseMessage>;
       if (taskWithValue != null) {
-        return await taskWithValue; // unwrap http response
+        return await taskWithValue; // unwrap async http response
       }
 
-      return req.CreateResponse();
+      var value = result as HttpResponseMessage;
+      if (value != null) {
+        return value; // return synchronous http response
+      }
+
+      return req.CreateResponse(HttpStatusCode.NoContent);
     }
   }
 }

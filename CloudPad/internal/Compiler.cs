@@ -14,6 +14,7 @@ namespace CloudPad.Internal {
     public string QueryName { get; }
 
     public string OutDir { get; set; }
+    public bool Delta { get; set; }
 
     public CompilationOptions(string queryPath) {
       if (queryPath == null) {
@@ -92,6 +93,7 @@ namespace CloudPad.Internal {
       foreach (var userAssembly in userAssemblies) {
         var destination = Path.Combine(lib, Path.GetFileName(userAssembly.Name.Name + ".dll")); // stabilize DLL name (simplifies assembly resolve)
         if (File.Exists(destination)) {
+          Debug.WriteLine($"Output file exists '{destination}'", nameof(Compiler));
           continue;
         }
         File.Copy(userAssembly.Location, destination);
@@ -112,6 +114,8 @@ namespace CloudPad.Internal {
       // whenever there is a version ambiguity, we will remove the version that CloudPad referenced
       // (multiple versions show up because users bring in different code not same)
 
+      var currentDomain = AppDomain.CurrentDomain;
+
       var cs = new AssemblyCandidateSet();
 
       // the purpose of this code is to get the typed data context, if used
@@ -119,11 +123,11 @@ namespace CloudPad.Internal {
       cs.Add(userQuery.Assembly.Location, userQuery.Assembly.GetName(), "<UserQuery>");
 
       foreach (var r in userQuery.Assembly.GetReferencedAssemblies()) {
-        var b = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == r.FullName); // if exact
+        var b = currentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == r.FullName); // if exact
         if (b != null) {
           cs.Add(b.Location, r, "<UserQuery>");
         } else {
-          var referencedAssembly = Assembly.Load(r);
+          var referencedAssembly = Assembly.Load(r.FullName);
           if (referencedAssembly.FullName == r.FullName) {
             cs.Add(referencedAssembly.Location, r, "<UserQuery>");
           }
@@ -149,15 +153,15 @@ namespace CloudPad.Internal {
 
       void unrefReferencedAssemblies(Assembly assembly) {
         foreach (var r in assembly.GetReferencedAssemblies()) {
-          Debug.WriteLine($"Unref '{r.FullName}'", "Unref");
+          Debug.WriteLine($"Unref '{r.FullName}'", nameof(Compiler));
           if (cs.Unref(r)) {
-            var b = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == r.FullName); // if exact
+            var b = currentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == r.FullName); // if exact
             if (b != null) {
               unrefReferencedAssemblies(b);
             } else {
-              Debug.WriteLine($"Load '{r}'", "Unref");
-              var referencedAssembly = Assembly.Load(r);
-              Debug.WriteLine($"Loaded '{referencedAssembly.FullName}'", "Unref");
+              Debug.WriteLine($"UnrefLoad '{r}'", nameof(Compiler));
+              var referencedAssembly = Assembly.Load(r.FullName);
+              Debug.WriteLine($"UnrefLoaded '{referencedAssembly.FullName}'\n from location '{referencedAssembly.Location}'", nameof(Compiler));
               if (referencedAssembly.FullName == r.FullName) { // if exact
                 unrefReferencedAssemblies(referencedAssembly);
               }
@@ -206,12 +210,12 @@ namespace CloudPad.Internal {
 
       foreach (var item in cs.Set) {
         var list = item.Value;
-        var c = list[0];
+        var c = list[list.Count - 1]; // use highest version
         if (1 < list.Count) {
           Trace.WriteLine($"Warning: Multiple versions of assembly '{c.Name.Name}' found.");
-          Trace.WriteLine($"Warning: Assembly '{c.Name.FullName}' from location '{c.Location}' used.");
+          Trace.WriteLine($"Warning: Assembly with highest version '{c.Name.FullName}' from location '{c.Location}' used.");
           Trace.WriteLine("Warning: The following verion(s) will not be used:");
-          for (int i = 1; i < list.Count; i++) {
+          for (int i = 0; i < list.Count - 1; i++) {
             var d = list[i];
             Trace.WriteLine($"Warning:   Assembly '{d.FullName}' from location '{d.Location}' ignored.");
           }

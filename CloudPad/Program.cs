@@ -9,36 +9,18 @@ using Tessin;
 namespace CloudPad {
   public static class Program {
     static Program() {
-#if _DEBUG
-      var d = AppDomain.CurrentDomain;
-      var xs = new System.Collections.Generic.HashSet<string>();
-      foreach (var loadedAssembly in d.GetAssemblies()) {
-        Trace.WriteLine($"Assembly '{loadedAssembly.FullName}' loaded from location '{loadedAssembly.Location}'");
-        xs.Add(loadedAssembly.FullName);
-      }
-      // see https://stackoverflow.com/a/14893126/58961
-      //d.AssemblyLoad += (sender, e) => {
-      //  Trace.WriteLine($"Assembly '{e.LoadedAssembly.FullName}' loaded from location '{e.LoadedAssembly.Location}'");
-      //};
-      System.Threading.ThreadPool.QueueUserWorkItem(_ => {
-        for (; ; ) {
-          foreach (var loadedAssembly in d.GetAssemblies()) {
-            if (xs.Add(loadedAssembly.FullName)) {
-              Trace.WriteLine($"*Assembly '{loadedAssembly.FullName}' loaded from location '{loadedAssembly.Location}'");
-            }
-          }
-          System.Threading.Thread.Sleep(100);
-        }
-      });
-#endif
+      AppDomain.CurrentDomain.AssemblyResolve += (sender, e) => {
+        Debug.WriteLine($"!AssemblyResolve '{e.Name}'");
+        return null;
+      };
     }
 
     // LINQPad script entry point 
     // when deployed as an Azure Function this method is not used
     public static async Task<int> MainAsync(object userQuery, string[] args) {
-      var LPRun = false;
+      var hasConsoleInput = false;
       if ("LPRun.exe".Equals(Process.GetCurrentProcess().MainModule.ModuleName, StringComparison.OrdinalIgnoreCase)) {
-        LPRun = true;
+        hasConsoleInput = Environment.UserInteractive;
 
         // pipe trace to console
         Trace.Listeners.Add(new ConsoleTraceListener());
@@ -73,12 +55,12 @@ namespace CloudPad {
 
         var workingDirectory = Path.Combine(Env.GetLocalAppDataDirectory(), currentQueryPathInfo.InstanceId);
 
+        Debug.WriteLine($"workingDirectory: {workingDirectory}");
+
         FunctionApp.Deploy(workingDirectory);
 
-        JobHost.Prepare();
-
         Compiler.Compile(new UserQueryTypeInfo(userQuery), currentQueryInfo, new CompilationOptions(currentQueryPath) {
-          OutDir = workingDirectory
+          OutDir = workingDirectory,
         }, currentQueryInfo);
 
         await JobHost.LaunchAsync(workingDirectory);
@@ -108,6 +90,12 @@ namespace CloudPad {
               }
             }
             Trace.WriteLine("Done.");
+            if (options.keep_alive) {
+              if (hasConsoleInput) {
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+              }
+            }
             return 0;
           } else if (options.prepare) {
             var compilationOptions = new CompilationOptions(currentQueryPath);
@@ -116,18 +104,19 @@ namespace CloudPad {
             Compiler.Compile(userQueryInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
             Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
             return 0;
-          } else if(options.install) {
+          } else if (options.install) {
             FirstRun.Install();
             return 0;
           }
         } catch (Exception ex) {
-          if (Environment.UserInteractive) {
-            if (LPRun) {
-              Console.WriteLine(ex.Message);
-              Console.WriteLine("Press any key to continue...");
-              Console.ReadKey();
-            }
+          Console.WriteLine(ex.Message);
+          Console.WriteLine(ex.StackTrace);
+
+          if (hasConsoleInput) {
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
           }
+
           throw;
         }
         return 1;
