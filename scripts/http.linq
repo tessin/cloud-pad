@@ -22,10 +22,13 @@
 
 Task Main(string[] args) => Program.MainAsync(this, args);
 
-[HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "HelloWorld")]
-public Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
+[HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "Hello/{name}")]
+public Task<HttpResponseMessage> Hello(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
 {
+	req.GetRouteData().Values.Dump(); // the actual route data value is not found here
+	
+	var name = req.GetRouteDataValue("name", ""); // but here (the azure function runtime has shenanigans)
 	var res = req.CreateResponse(HttpStatusCode.OK);
-	res.Content = new StringContent("Hello Oscar!", Encoding.UTF8, "text/plain");
+	res.Content = new StringContent($"Hello {name}!", Encoding.UTF8, "text/plain");
 	return Task.FromResult(res);
 }
