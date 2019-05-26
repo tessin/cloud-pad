@@ -90,7 +90,7 @@ namespace CloudPad {
               }
             }
             Trace.WriteLine("Done.");
-            if (options.keep_alive) {
+            if (options.interactive) {
               if (hasConsoleInput) {
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
