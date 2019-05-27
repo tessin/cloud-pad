@@ -25,8 +25,19 @@ namespace CloudPad {
       if (message2 == null) {
         message2 = new CloudQueueMessage(JsonConvert.SerializeObject(message));
       }
+
       var queueClient = GetQueueClient();
+
       var queue = queueClient.GetQueueReference(queueName);
+      try {
+        await queue.AddMessageAsync(message2, timeToLive, initialVisibilityDelay, null, null);
+        return; // ok, done
+      } catch (StorageException ex) when (ex.RequestInformation.ExtendedErrorInformation.ErrorCode == "QueueNotFound") {
+        // create queue
+      }
+
+      await queue.CreateIfNotExistsAsync();
+
       await queue.AddMessageAsync(message2, timeToLive, initialVisibilityDelay, null, null);
     }
   }

@@ -162,7 +162,7 @@ namespace CloudPad.FunctionApp {
 
         var task = result as Task;
         if (task != null) {
-          await task; // do not exit scope until task is finished
+          await task; // do not exit activation scope until task is finished
         }
 
         return result;

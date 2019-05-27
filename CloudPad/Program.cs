@@ -47,21 +47,36 @@ namespace CloudPad {
 
       args = args ?? new string[0]; // note: `args` can be null
       if (args.Length == 0) {
-        // todo: storage emulator?
-
         if (FirstRun.ShouldPrompt()) {
           FirstRun.Prompt();
         }
 
+        // ================================
+
         var workingDirectory = Path.Combine(Env.GetLocalAppDataDirectory(), currentQueryPathInfo.InstanceId);
-
         Debug.WriteLine($"workingDirectory: {workingDirectory}");
-
         FunctionApp.Deploy(workingDirectory);
+
+        // ================================
 
         Compiler.Compile(new UserQueryTypeInfo(userQuery), currentQueryInfo, new CompilationOptions(currentQueryPath) {
           OutDir = workingDirectory,
         }, currentQueryInfo);
+
+        // ================================
+
+        // todo: storage emulator?
+        // todo: if AzureWebJobsStorage or AzureWebJobsDashboard is set elsewhere, like app.config we shouldn't override them like this
+
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))) {
+          Environment.SetEnvironmentVariable("AzureWebJobsStorage", "UseDevelopmentStorage=true");
+        }
+
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AzureWebJobsDashboard"))) {
+          Environment.SetEnvironmentVariable("AzureWebJobsDashboard", "UseDevelopmentStorage=true");
+        }
+
+        // ================================
 
         await JobHost.LaunchAsync(workingDirectory);
 

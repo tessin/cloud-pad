@@ -39,9 +39,9 @@ public async Task HelloWorld(HttpRequestMessage req, CancellationToken cancellat
 	await storage.AddQueueMessageAsync(QueueName, new Message { Text = "Hello World!" });
 }
 
- // again, trigger binds to first parameter, here it's a user defined Message type because it is a queue trigger (the message will be deserialized as JSON)
+ // again, trigger binds to first parameter, here it's a user defined Message type because it is a queue trigger (the message will be deserialized from JSON)
 [QueueTrigger(QueueName)]
-public void HelloWorldQueueConsumer(Message msg, CancellationToken cancellationToken, ILogger log)
+public void HelloWorldQueueMessage(Message msg, CancellationToken cancellationToken, ILogger log)
 {
 	msg.Dump();
 }

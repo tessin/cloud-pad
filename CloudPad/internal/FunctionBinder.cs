@@ -7,7 +7,8 @@ using System.Reflection;
 namespace CloudPad.Internal {
   static class FunctionBinder {
     private static readonly Type[] _triggerAttributeTypes = new Type[] {
-      typeof(HttpTriggerAttribute)
+      typeof(HttpTriggerAttribute),
+      typeof(QueueTriggerAttribute),
     };
 
     public static FunctionDescriptor Bind(MethodInfo m) {
