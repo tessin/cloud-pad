@@ -1,7 +1,9 @@
 using CloudPad.Internal;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using System;
 using System.Threading.Tasks;
 
 namespace CloudPad.FunctionApp
@@ -20,9 +22,13 @@ namespace CloudPad.FunctionApp
 
             arguments.AddArgument(typeof(CloudBlockBlob), blob);
             arguments.AddArgument(typeof(System.Threading.CancellationToken), cancellationToken);
-            arguments.AddArgument(typeof(ExecutionContext), executionContext);
-            arguments.AddArgument(typeof(TraceWriter), log);
             arguments.AddArgument(typeof(ITraceWriter), new TraceWriterWrapper(log));
+
+            var cloudStorageHelperType = typeof(ICloudStorage);
+            if (func.Function.ParameterBindings.HasBinding(cloudStorageHelperType))
+            {
+                arguments.AddArgument(cloudStorageHelperType, new CloudStorage(CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))));
+            }
 
             await func.InvokeAsync(arguments, log);
         }

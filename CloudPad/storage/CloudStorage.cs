@@ -7,13 +7,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudPad
+namespace CloudPad.Internal
 {
-    public class CloudStorageHelper
+    class CloudStorage : ICloudStorage
     {
-        public CloudStorageAccount Account;
+        public CloudStorageAccount Account { get; }
 
-        public CloudStorageHelper(CloudStorageAccount account)
+        public CloudStorage(CloudStorageAccount account)
         {
             Account = account;
         }
@@ -33,7 +33,7 @@ namespace CloudPad
         /// <summary>
         /// Put a storage queue message in the queue specified by queueName. The queue message will be serialized as JSON. If you pass a CloudQueueMessage instance, the message is added to the queue as-is (not serialized as JSON).
         /// </summary>
-        public async Task<CloudQueueMessage> AddQueueMessageAsync(string queueName, object message, TimeSpan? timeToLive = null, TimeSpan? initialVisibilityDelay = null)
+        public async Task<CloudQueueMessage> AddMessageAsync(string queueName, object message, TimeSpan? timeToLive = null, TimeSpan? initialVisibilityDelay = null)
         {
             var message2 = message as CloudQueueMessage;
             if (message2 == null)

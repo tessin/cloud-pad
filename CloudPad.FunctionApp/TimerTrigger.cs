@@ -21,14 +21,12 @@ namespace CloudPad.FunctionApp
             // common
             arguments.AddArgument(typeof(ITimerInfo), new TimerInfoWrapper(timer));
             arguments.AddArgument(typeof(System.Threading.CancellationToken), cancellationToken);
-            arguments.AddArgument(typeof(ExecutionContext), executionContext);
-            arguments.AddArgument(typeof(TraceWriter), log);
             arguments.AddArgument(typeof(ITraceWriter), new TraceWriterWrapper(log));
 
-            var cloudStorageHelperType = typeof(CloudStorageHelper);
+            var cloudStorageHelperType = typeof(ICloudStorage);
             if (func.Function.ParameterBindings.HasBinding(cloudStorageHelperType))
             {
-                arguments.AddArgument(cloudStorageHelperType, new CloudStorageHelper(CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))));
+                arguments.AddArgument(cloudStorageHelperType, new CloudStorage(CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))));
             }
 
             await func.InvokeAsync(arguments, log);

@@ -7,38 +7,41 @@ using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
 
-namespace CloudPad.FunctionApp {
-  public static class QueueTrigger {
-    public static async Task Run(CloudQueueMessage msg,
-      System.Threading.CancellationToken cancellationToken,
-      ExecutionContext executionContext, // note that this name is also found in namespace "System.Threading" we don't want that
-      TraceWriter log) {
+namespace CloudPad.FunctionApp
+{
+    public static class QueueTrigger
+    {
+        public static async Task Run(CloudQueueMessage msg,
+          System.Threading.CancellationToken cancellationToken,
+          ExecutionContext executionContext, // note that this name is also found in namespace "System.Threading" we don't want that
+          TraceWriter log)
+        {
 
-      var func = await FunctionExecutor.GetAndInvalidateAsync(executionContext.FunctionDirectory, log);
+            var func = await FunctionExecutor.GetAndInvalidateAsync(executionContext.FunctionDirectory, log);
 
-      var arguments = new FunctionArgumentList();
+            var arguments = new FunctionArgumentList();
 
-      // queue message type
-      var parameters = func.Function.Method.GetParameters();
-      var parameter0Type = parameters[0].ParameterType;
-      if (parameter0Type != typeof(CloudQueueMessage)) {
-        arguments.AddArgument(parameter0Type, JsonConvert.DeserializeObject(msg.AsString, parameter0Type));
-      }
+            // queue message type
+            var parameters = func.Function.Method.GetParameters();
+            var parameter0Type = parameters[0].ParameterType;
+            if (parameter0Type != typeof(CloudQueueMessage))
+            {
+                arguments.AddArgument(parameter0Type, JsonConvert.DeserializeObject(msg.AsString, parameter0Type));
+            }
 
-      arguments.AddArgument(typeof(CloudQueueMessage), msg);
+            arguments.AddArgument(typeof(CloudQueueMessage), msg);
 
-      // common
-      arguments.AddArgument(typeof(System.Threading.CancellationToken), cancellationToken);
-      arguments.AddArgument(typeof(ExecutionContext), executionContext);
-      arguments.AddArgument(typeof(TraceWriter), log);
-      arguments.AddArgument(typeof(ITraceWriter), new TraceWriterWrapper(log));
+            // common
+            arguments.AddArgument(typeof(System.Threading.CancellationToken), cancellationToken);
+            arguments.AddArgument(typeof(ITraceWriter), new TraceWriterWrapper(log));
 
-      var cloudStorageHelperType = typeof(CloudStorageHelper);
-      if (func.Function.ParameterBindings.HasBinding(cloudStorageHelperType)) {
-        arguments.AddArgument(cloudStorageHelperType, new CloudStorageHelper(CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))));
-      }
+            var cloudStorageHelperType = typeof(ICloudStorage);
+            if (func.Function.ParameterBindings.HasBinding(cloudStorageHelperType))
+            {
+                arguments.AddArgument(cloudStorageHelperType, new CloudStorage(CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))));
+            }
 
-      await func.InvokeAsync(arguments, log);
+            await func.InvokeAsync(arguments, log);
+        }
     }
-  }
 }

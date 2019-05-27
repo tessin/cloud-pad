@@ -81,7 +81,8 @@ namespace CloudPad
 
                 // ================================
 
-                // todo: storage emulator?
+                StorageEmulator.StartOrInstall();
+
                 // todo: if AzureWebJobsStorage or AzureWebJobsDashboard is set elsewhere, like app.config we shouldn't override them like this
 
                 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AzureWebJobsStorage")))
@@ -158,6 +159,32 @@ namespace CloudPad
                             var publishSettingsFileName = FileUtil.ResolveSearchPatternUpDirectoryTree(compilationOptions.QueryDirectoryName, "*.PublishSettings").Single();
                             var kudu = KuduClient.FromPublishProfile(publishSettingsFileName);
                             Trace.WriteLine($"Publishing to '{kudu.Host}'...");
+
+                            // need to check for cloud pad function app runtime
+                            // if not found, offer to deploy it
+
+                            if (!kudu.VfsExists("site/wwwroot/bin/CloudPad.FunctionApp.dll"))
+                            {
+                                if (hasConsoleInput)
+                                {
+                                    var text = "It looks like the CloudPad.FunctionApp (runtime) has not been deployed yet. Would you like to deploy this now (you only do this once per Azure Function App)?";
+                                    var caption = "Deployment";
+
+                                    if (MessageBox.ShowYesNoQuestion(text, caption))
+                                    {
+                                        Trace.WriteLine($"Deploying runtime... (this will take just a minute)");
+                                        kudu.ZipDeployPackage(FunctionApp.PackageUri);
+                                    }
+                                }
+                                else
+                                {
+                                    Trace.WriteLine($"Oh no. You have to deploy the CloudPad.FunctionApp runtime first");
+                                    return 1;
+                                }
+                            }
+
+                            Trace.WriteLine($"Deploying script...");
+
                             kudu.ZipUpload(compilationOptions.OutDir);
                         }
                         finally

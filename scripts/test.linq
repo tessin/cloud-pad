@@ -22,10 +22,10 @@
 
 Task Main(string[] args) => Program.MainAsync(this, args);
 
-[HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "HelloWorld")]
-public Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ITraceWriter log)
+[HttpTrigger(AuthorizationLevel.Anonymous)]
+public HttpResponseMessage HelloHttp(HttpRequestMessage req)
 {
 	var res = req.CreateResponse(HttpStatusCode.OK);
 	res.Content = new StringContent("Hello World!", Encoding.UTF8, "text/plain");
-	return Task.FromResult(res);
+	return res;
 }

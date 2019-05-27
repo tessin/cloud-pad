@@ -9,6 +9,16 @@
             This value is always null when running from within LINQPad. When running outside LINQPad the value is only valid for the duration of the LINQPad UserQuery constructor.
             </summary>
         </member>
+        <member name="M:CloudPad.Internal.CloudStorage.AddMessageAsync(System.String,System.Object,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})">
+            <summary>
+            Put a storage queue message in the queue specified by queueName. The queue message will be serialized as JSON. If you pass a CloudQueueMessage instance, the message is added to the queue as-is (not serialized as JSON).
+            </summary>
+        </member>
+        <member name="M:CloudPad.Internal.CloudStorage.UploadFromStreamAsync(System.String,System.String,System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>
+            Initiates an asynchronous operation to upload a stream to a block blob. If the blob already exists, it will be overwritten.
+            </summary>
+        </member>
         <member name="M:CloudPad.ITimerInfo.GetNextOccurrence(System.Nullable{System.DateTime})">
             <summary>
             Gets the next occurrence of the schedule based on the specified base time.
@@ -54,12 +64,12 @@
             Late bound subset of LINQPad.Extensions interface. These utilities short circuit gracefully (do nothing) when not running within a LINQPad context.
             </summary>
         </member>
-        <member name="M:CloudPad.CloudStorageHelper.AddQueueMessageAsync(System.String,System.Object,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})">
+        <member name="M:CloudPad.ICloudStorage.AddMessageAsync(System.String,System.Object,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})">
             <summary>
             Put a storage queue message in the queue specified by queueName. The queue message will be serialized as JSON. If you pass a CloudQueueMessage instance, the message is added to the queue as-is (not serialized as JSON).
             </summary>
         </member>
-        <member name="M:CloudPad.CloudStorageHelper.UploadFromStreamAsync(System.String,System.String,System.IO.Stream,System.Threading.CancellationToken)">
+        <member name="M:CloudPad.ICloudStorage.UploadFromStreamAsync(System.String,System.String,System.IO.Stream,System.Threading.CancellationToken)">
             <summary>
             Initiates an asynchronous operation to upload a stream to a block blob. If the blob already exists, it will be overwritten.
             </summary>

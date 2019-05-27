@@ -31,7 +31,7 @@ public class Message
 }
 
 [HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "HelloWorld")] // trigger binds to first parameter, here it's a HttpRequestMessage because it is a HTTP trigger
-public async Task HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log, CloudStorageHelper storage)
+public async Task HelloWorld(HttpRequestMessage req, CloudStorageHelper storage)
 {
 	// Http triggers don't have to return a message. 
 	// If they don't they will respond with a "204 No Content" if no error is thrown.
@@ -41,7 +41,7 @@ public async Task HelloWorld(HttpRequestMessage req, CancellationToken cancellat
 
  // again, trigger binds to first parameter, here it's a user defined Message type because it is a queue trigger (the message will be deserialized from JSON)
 [QueueTrigger(QueueName)]
-public void HelloWorldQueueMessage(Message msg, CancellationToken cancellationToken, ILogger log)
+public void HelloWorldQueueMessage(Message msg)
 {
 	msg.Dump();
 }

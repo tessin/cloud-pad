@@ -23,7 +23,7 @@
 Task Main(string[] args) => Program.MainAsync(this, args);
 
 [HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "Hello/{name}")]
-public Task<HttpResponseMessage> Hello(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
+public Task<HttpResponseMessage> HelloHttp(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
 {
 	// the actual route data value is not found here, this is diffrent from ASP.NET Web API
 	req.GetRouteData().Values.Dump();
@@ -36,7 +36,7 @@ public Task<HttpResponseMessage> Hello(HttpRequestMessage req, CancellationToken
 }
 
 [HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "Hello")]
-public Task<HttpResponseMessage> HelloWithQuery(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
+public Task<HttpResponseMessage> HelloHttpWithQuery(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
 {
 	// you can do this, or...
 	req.GetQueryNameValuePairs().Dump();
