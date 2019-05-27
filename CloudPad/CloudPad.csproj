@@ -11,6 +11,12 @@
     <StartupObject />
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad\CloudPad.xml</DocumentationFile>
+    <WarningsAsErrors>NU1605</WarningsAsErrors>
+    <NoWarn>1591;1701;1702</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />

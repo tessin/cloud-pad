@@ -1,6 +1,7 @@
 using CloudPad.Internal;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.WindowsAzure.Storage;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -23,6 +24,11 @@ namespace CloudPad.FunctionApp {
       arguments.AddArgument(typeof(ExecutionContext), executionContext);
       arguments.AddArgument(typeof(TraceWriter), log);
       arguments.AddArgument(typeof(ILogger), new TraceWriterLogger(log));
+
+      var cloudStorageHelperType = typeof(CloudStorageHelper);
+      if (func.Function.ParameterBindings.HasBinding(cloudStorageHelperType)) {
+        arguments.AddArgument(cloudStorageHelperType, new CloudStorageHelper(CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("AzureWebJobsStorage"))));
+      }
 
       object result;
       try {

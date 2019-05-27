@@ -25,9 +25,31 @@ Task Main(string[] args) => Program.MainAsync(this, args);
 [HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "Hello/{name}")]
 public Task<HttpResponseMessage> Hello(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
 {
-	req.GetRouteData().Values.Dump(); // the actual route data value is not found here
+	// the actual route data value is not found here, this is diffrent from ASP.NET Web API
+	req.GetRouteData().Values.Dump();
+
+	// but here (Azure Function Runtime shenanigans), GetRouteValue is an extension method provided by CloudPad
+	var name = req.GetRouteValue("name", "");
+	var res = req.CreateResponse(HttpStatusCode.OK);
+	res.Content = new StringContent($"Hello {name}!", Encoding.UTF8, "text/plain");
+	return Task.FromResult(res);
+}
+
+[HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "Hello")]
+public Task<HttpResponseMessage> HelloWithQuery(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
+{
+	// you can do this, or...
+	req.GetQueryNameValuePairs().Dump();
+
+	// you can do this, GetQueryValue is an extension method provided by CloudPad very similar to GetRouteValue
+	var name = req.GetQueryValue("name", "", isRequired: true);
+
+	// note that, by default query string parameters are not required and support mutliple values, for example
+	req.GetQueryValues<string>("name").Dump();
 	
-	var name = req.GetRouteDataValue("name", ""); // but here (the azure function runtime has shenanigans)
+	// in the case of mutliple values, `GetQueryValue` always gets the first value
+	// GetQueryValue and GetQueryValues are not case sensitive
+
 	var res = req.CreateResponse(HttpStatusCode.OK);
 	res.Content = new StringContent($"Hello {name}!", Encoding.UTF8, "text/plain");
 	return Task.FromResult(res);

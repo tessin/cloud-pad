@@ -26,6 +26,6 @@ Task Main(string[] args) => Program.MainAsync(this, args);
 public Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ILogger log)
 {
 	var res = req.CreateResponse(HttpStatusCode.OK);
-	res.Content = new StringContent("Hello Oscar!", Encoding.UTF8, "text/plain");
+	res.Content = new StringContent("Hello World!", Encoding.UTF8, "text/plain");
 	return Task.FromResult(res);
 }
