@@ -18,14 +18,34 @@
   <Namespace>System.Net</Namespace>
   <Namespace>System.Net.Http</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
+  <Namespace>Microsoft.WindowsAzure.Storage.Blob</Namespace>
 </Query>
+
+const string BlobContainer = "cloud-pad-blob-container";
 
 Task Main(string[] args) => Program.MainAsync(this, args);
 
-[HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "HelloWorld")]
-public Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ITraceWriter log)
+[HttpTrigger(AuthorizationLevel.Anonymous, "GET", "POST", Route = "Upload")]
+public async Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ITraceWriter log, CloudStorageHelper storage)
 {
+	if (req.Method == HttpMethod.Post)
+	{
+		var data = await req.Content.ReadAsMultipartAsync();
+		var payload = data.Contents.First(c => c.Headers.ContentDisposition.Dump().Name == "\"payload\"");
+		var source = await payload.ReadAsStreamAsync();
+
+		await storage.UploadFromStreamAsync(BlobContainer, payload.Headers.ContentDisposition.FileName.Trim('\"'), source);
+
+		return req.CreateResponse(HttpStatusCode.NoContent); // thanks!
+	}
+
 	var res = req.CreateResponse(HttpStatusCode.OK);
-	res.Content = new StringContent("Hello World!", Encoding.UTF8, "text/plain");
-	return Task.FromResult(res);
+	res.Content = new StringContent("<form method=POST enctype='multipart/form-data'><input type=file name=payload><input type=submit></form>", Encoding.UTF8, "text/html");
+	return res;
+}
+
+[BlobTrigger(BlobContainer)]
+public void HelloBlob(CloudBlockBlob blob)
+{
+	blob.Uri.Dump("Got the blob!");
 }

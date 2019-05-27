@@ -2,10 +2,10 @@
 using System;
 
 namespace CloudPad.FunctionApp {
-  class TraceWriterLogger : ILogger {
+  class TraceWriterWrapper : ITraceWriter {
     private readonly TraceWriter _log;
 
-    public TraceWriterLogger(TraceWriter log) {
+    public TraceWriterWrapper(TraceWriter log) {
       this._log = log;
     }
 

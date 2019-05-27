@@ -23,7 +23,7 @@ namespace CloudPad.FunctionApp {
       arguments.AddArgument(typeof(System.Threading.CancellationToken), cancellationToken);
       arguments.AddArgument(typeof(ExecutionContext), executionContext);
       arguments.AddArgument(typeof(TraceWriter), log);
-      arguments.AddArgument(typeof(ILogger), new TraceWriterLogger(log));
+      arguments.AddArgument(typeof(ITraceWriter), new TraceWriterWrapper(log));
 
       var cloudStorageHelperType = typeof(CloudStorageHelper);
       if (func.Function.ParameterBindings.HasBinding(cloudStorageHelperType)) {
