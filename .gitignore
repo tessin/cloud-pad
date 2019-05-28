@@ -6,3 +6,5 @@ node_modules
 *.PublishSettings
 *_*
 func
+
+CloudPad.xml
