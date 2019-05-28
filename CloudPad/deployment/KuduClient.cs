@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -57,6 +58,30 @@ namespace CloudPad.Internal
             }
         }
 
+        public HttpWebResponse DoFile(HttpWebRequest req, string path)
+        {
+            using (var outStream = req.GetRequestStream())
+            {
+                using (var inStream = File.OpenRead(path))
+                {
+                    inStream.CopyTo(outStream);
+                }
+            }
+            return Do(req);
+        }
+
+        public HttpWebResponse DoJson(HttpWebRequest req, object payload)
+        {
+            req.ContentType = "application/json";
+            using (var reqStream = req.GetRequestStream())
+            {
+                var text = JsonConvert.SerializeObject(payload);
+                var bytes = Encoding.UTF8.GetBytes(text);
+                reqStream.Write(bytes, 0, bytes.Length);
+            }
+            return Do(req);
+        }
+
         public void Check(HttpWebResponse res)
         {
             if (!(200 <= (int)res.StatusCode && (int)res.StatusCode <= 299))
@@ -65,6 +90,18 @@ namespace CloudPad.Internal
             }
         }
 
+        public T CheckJson<T>(HttpWebResponse res)
+        {
+            Check(res);
+
+            using (var reader = new StreamReader(res.GetResponseStream(), Encoding.UTF8, false))
+            {
+                return JsonConvert.DeserializeObject<T>(reader.ReadToEnd());
+            }
+        }
+
+        // ================================
+
         public void ZipDeploy(string dir)
         {
             using (var tempFile = new TempFile())
@@ -72,14 +109,7 @@ namespace CloudPad.Internal
                 ZipFile.CreateFromDirectory(dir, tempFile.FileName);
 
                 var req = CreateRequest("POST", "/api/zipdeploy");
-                using (var outStream = req.GetRequestStream())
-                {
-                    using (var inStream = File.OpenRead(tempFile.FileName))
-                    {
-                        inStream.CopyTo(outStream);
-                    }
-                }
-                using (var res = Do(req))
+                using (var res = DoFile(req, tempFile.FileName))
                 {
                     Check(res);
                 }
@@ -89,13 +119,7 @@ namespace CloudPad.Internal
         public void ZipDeployPackage(Uri packageUri)
         {
             var req = CreateRequest("PUT", "/api/zipdeploy");
-            req.ContentType = "application/json";
-            using (var outStream = req.GetRequestStream())
-            {
-                var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { packageUri }));
-                outStream.Write(bytes, 0, bytes.Length);
-            }
-            using (var res = Do(req))
+            using (var res = DoJson(req, new { packageUri }))
             {
                 Check(res);
             }
@@ -108,14 +132,7 @@ namespace CloudPad.Internal
                 ZipFile.CreateFromDirectory(dir, tempFile.FileName);
 
                 var req = CreateRequest("PUT", "/api/zip/" + path);
-                using (var outStream = req.GetRequestStream())
-                {
-                    using (var inStream = File.OpenRead(tempFile.FileName))
-                    {
-                        inStream.CopyTo(outStream);
-                    }
-                }
-                using (var res = Do(req))
+                using (var res = DoFile(req, tempFile.FileName))
                 {
                     Check(res);
                 }
@@ -130,6 +147,29 @@ namespace CloudPad.Internal
             using (var res = Do(req))
             {
                 return res.StatusCode == HttpStatusCode.OK;
+            }
+        }
+
+        // ================================
+
+        public Dictionary<string, string> GetSettings()
+        {
+            var req = CreateRequest("GET", "/api/settings");
+            using (var res = Do(req))
+            {
+                return CheckJson<Dictionary<string, string>>(res);
+            }
+        }
+
+        /// <summary>
+        /// Note, this API changes Kudu/AzureWebJobs settings. Cannot be used to set application settings.
+        /// </summary>
+        public void PostSettings(Dictionary<string, string> settings)
+        {
+            var req = CreateRequest("POST", "/api/settings");
+            using (var res = DoJson(req, settings))
+            {
+                Check(res);
             }
         }
     }

@@ -1,6 +1,9 @@
 using CloudPad.Internal;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -40,7 +43,7 @@ namespace CloudPad
             {
                 throw new ArgumentNullException("User query cannot be null. You should pass 'this' here.", nameof(userQuery));
             }
-            var userQueryInfo = new UserQueryTypeInfo(userQuery);
+            var userQueryTypeInfo = new UserQueryTypeInfo(userQuery);
 
             var currentQuery = Util.CurrentQuery;
             if (currentQuery == null)
@@ -144,21 +147,79 @@ namespace CloudPad
                     if (options.compile)
                     {
                         var compilationOptions = new CompilationOptions(currentQueryPath);
-                        compilationOptions.OutDir = options.out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id) : Path.GetFullPath(options.out_dir);
-                        Compiler.Compile(userQueryInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
+                        compilationOptions.OutDir = options.out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryTypeInfo.Id) : Path.GetFullPath(options.out_dir);
+                        Compiler.Compile(userQueryTypeInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
                         Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
                         return 0;
                     }
                     else if (options.publish)
                     {
                         var compilationOptions = new CompilationOptions(currentQueryPath);
-                        compilationOptions.OutDir = Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryInfo.Id + "_" + Environment.TickCount);
+                        compilationOptions.OutDir = Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_" + userQueryTypeInfo.Id + "_" + Environment.TickCount);
                         try
                         {
-                            Compiler.Compile(userQueryInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
-                            var publishSettingsFileName = FileUtil.ResolveSearchPatternUpDirectoryTree(compilationOptions.QueryDirectoryName, "*.PublishSettings").Single();
-                            var kudu = KuduClient.FromPublishProfile(publishSettingsFileName);
-                            Trace.WriteLine($"Publishing to '{kudu.Host}'...");
+                            Compiler.Compile(userQueryTypeInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
+
+                            var publishSettingsFileNames = FileUtil.ResolveSearchPatternUpDirectoryTree(compilationOptions.QueryDirectoryName, "*.PublishSettings").ToList();
+                            if (1 != publishSettingsFileNames.Count)
+                            {
+                                if (1 < publishSettingsFileNames.Count)
+                                {
+                                    throw new InvalidOperationException($"Aborted. Found two or more '*.PublishSettings' files. " + string.Join(", ", publishSettingsFileNames));
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException($"Aborted. Cannot find a '*.PublishSettings' file in '{compilationOptions.QueryDirectoryName}' or any of it's parents");
+                                }
+                            }
+
+                            var kudu = KuduClient.FromPublishProfile(publishSettingsFileNames[0]);
+
+                            var appSettings = kudu.GetSettings();
+                            if (appSettings.TryGetValue("WEBSITE_SITE_NAME", out var siteName) && appSettings.TryGetValue("WEBSITE_SLOT_NAME", out var slotName))
+                            {
+                                Trace.WriteLine($"Publishing to '{siteName}' ({slotName})...");
+                            }
+                            else
+                            {
+                                Trace.WriteLine($"Site '{kudu.Host}' metadata is missing");
+                            }
+
+                            // this setting needs to be changed using the az command line
+                            // https://docs.microsoft.com/en-us/azure/azure-functions/set-runtime-version#view-and-update-the-runtime-version-using-azure-cli
+                            // using the Kudu settings API doesn't update the application app settings
+
+                            if (appSettings.TryGetValue("FUNCTIONS_EXTENSION_VERSION", out var functionsExtensionVersion))
+                            {
+                                if (functionsExtensionVersion != "~1")
+                                {
+                                    var text = "The Azure Functions runtime version 1.x is required. Would you like to change the FUNCTIONS_EXTENSION_VERSION setting to ~1?";
+                                    var caption = "Azure Functions Runtime";
+
+                                    if (MessageBox.ShowYesNoQuestion(text, caption))
+                                    {
+                                        var result = await Az.RunAsunc("functionapp", "list", "--query", $"[?name=='{siteName}']");
+                                        if (result.Output.Count() != 1)
+                                        {
+                                            throw new InvalidOperationException($"Aborted. Cannot find Azure Function App '{siteName}'");
+                                        }
+
+                                        var functionApp = result.Output[0];
+
+                                        var g = (string)functionApp["resourceGroup"];
+
+                                        var result2 = await Az.RunAsunc("functionapp", "config", "appsettings", "set", "-g", g, "-n", siteName, "--settings", "FUNCTIONS_EXTENSION_VERSION=~1");
+                                        if (result2.ExitCode != 0)
+                                        {
+                                            throw new InvalidOperationException($"Aborted. Cannot configure Azure Function App '{siteName}'");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        throw new InvalidOperationException("Aborted. Azure Functions runtime version 1.x is required");
+                                    }
+                                }
+                            }
 
                             // need to check for cloud pad function app runtime
                             // if not found, offer to deploy it
@@ -172,7 +233,7 @@ namespace CloudPad
 
                                     if (MessageBox.ShowYesNoQuestion(text, caption))
                                     {
-                                        Trace.WriteLine($"Deploying runtime... (this will take just a minute)");
+                                        Trace.WriteLine($"Deploying runtime... (this will just take a minute)");
                                         kudu.ZipDeployPackage(FunctionApp.PackageUri);
                                     }
                                 }
@@ -183,7 +244,7 @@ namespace CloudPad
                                 }
                             }
 
-                            Trace.WriteLine($"Deploying script...");
+                            Trace.WriteLine($"Deploying script '{currentQueryPathInfo.QueryFileNameWithoutExtension}' ({userQueryTypeInfo.AssemblyName})...");
 
                             kudu.ZipUpload(compilationOptions.OutDir);
                         }
@@ -210,7 +271,7 @@ namespace CloudPad
                         var compilationOptions = new CompilationOptions(currentQueryPath);
                         compilationOptions.OutDir = options.out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_publish") : Path.GetFullPath(options.out_dir);
                         FunctionApp.Deploy(compilationOptions.OutDir);
-                        Compiler.Compile(userQueryInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
+                        Compiler.Compile(userQueryTypeInfo, currentQueryInfo, compilationOptions, currentQueryInfo);
                         Trace.WriteLine($"Done. Output written to '{compilationOptions.OutDir}'");
                         return 0;
                     }
