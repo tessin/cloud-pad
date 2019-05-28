@@ -10,9 +10,9 @@ EndProject
 Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "func", "..\..\..\AppData\Local\CloudPad\func.1.0.19\func.exe", "{D72994B8-B379-4244-9F1C-AEE715218C37}"
 	ProjectSection(DebuggerProjectSystem) = preProject
 		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = C:\ProgramData\CloudPad\func\1.0.19\func.exe
+		Executable = C:\Users\leidegre\Source\azure-functions-core-tools\func.exe
 		RemoteMachine = DESKTOP-VA266S2
-		StartingDirectory = C:\Users\leidegre\AppData\Local\CloudPad\4c4e47e61bc05820bb60c096c486f7aa77077cfde28cd20cc9e510d364fba9b3
+		StartingDirectory = C:\Users\leidegre\Desktop\neils\tdg_publish\scripts\tdg_hivdzh
 		Arguments = host start
 		Environment = Default
 		LaunchingEngine = fb0d4648-f776-4980-95f8-bb7f36ebc1ee

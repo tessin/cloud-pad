@@ -35,7 +35,7 @@ namespace CloudPad.Internal
         [Conditional("DEBUG")]
         private static void DeployDebug(string workingDirectory)
         {
-            var source = @"C:\Users\leidegre\Source\tessin\cloud-pad2\CloudPad.FunctionApp\bin\Debug\net461"; // would be nice if we could infer this rather than hard code it
+            var source = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\Source\tessin\cloud-pad\CloudPad.FunctionApp\bin\Debug\net461");
 
             var sourceHost = Path.Combine(source, "host.json");
             var sourceBin = Path.Combine(source, "bin") + "\\";  // this trailing slash is important!

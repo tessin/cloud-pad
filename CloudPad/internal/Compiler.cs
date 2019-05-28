@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mono.Cecil;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -133,7 +134,7 @@ namespace CloudPad.Internal
                     Debug.WriteLine($"Output file exists '{destination}'", nameof(Compiler));
                     continue;
                 }
-                File.Copy(userAssembly.Location, destination);
+                AssemblyBindingRewrite.Rewrite(userAssembly.Location, destination);
             }
 
             // ====
@@ -241,15 +242,15 @@ namespace CloudPad.Internal
             // ====
 
             var excludeLocations = new List<string>() {
-        // Ignore stuff from LINQPad installation dir
-        CanonicalDirectoryName(Path.GetDirectoryName(Assembly.Load("LINQPad").Location)),
+                // Ignore stuff from LINQPad installation dir
+                CanonicalDirectoryName(Path.GetDirectoryName(Assembly.Load("LINQPad").Location)),
 
-        // Ignore stuff from azure-functions-core-tools installation dir
-        CanonicalDirectoryName(Env.GetProgramDataDirectory()), // only necessary when running from within LINQPad but it doesn't hurt
+                // Ignore stuff from azure-functions-core-tools installation dir
+                CanonicalDirectoryName(Env.GetProgramDataDirectory()), // only necessary when running from within LINQPad but it doesn't hurt
 
-        // Ignore stuff from Windows installation dir
-        CanonicalDirectoryName(Environment.GetEnvironmentVariable("WINDIR")),
-      };
+                // Ignore stuff from Windows installation dir
+                CanonicalDirectoryName(Environment.GetEnvironmentVariable("WINDIR")),
+            };
 
             bool shouldExcludeLocation(string location)
             {

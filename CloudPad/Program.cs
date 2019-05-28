@@ -1,9 +1,6 @@
 using CloudPad.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -266,7 +263,7 @@ namespace CloudPad
                         }
                         return 0;
                     }
-                    else if (options.prepare)
+                    else if (options.pack)
                     {
                         var compilationOptions = new CompilationOptions(currentQueryPath);
                         compilationOptions.OutDir = options.out_dir == null ? Path.Combine(compilationOptions.QueryDirectoryName, compilationOptions.QueryName + "_publish") : Path.GetFullPath(options.out_dir);

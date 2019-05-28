@@ -44,6 +44,7 @@ namespace CloudPad.Internal
                 }
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(Lockfile));
             File.WriteAllText(Lockfile, "");
         }
 
