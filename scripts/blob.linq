@@ -26,7 +26,7 @@ const string BlobContainer = "cloud-pad-blob-container";
 Task Main(string[] args) => Program.MainAsync(this, args);
 
 [HttpTrigger(AuthorizationLevel.Anonymous, "GET", "POST", Route = "Upload")]
-public async Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, CancellationToken cancellationToken, ITraceWriter log, CloudStorageHelper storage)
+public async Task<HttpResponseMessage> HelloBlob(HttpRequestMessage req, CancellationToken cancellationToken, ITraceWriter log, ICloudStorage storage)
 {
 	if (req.Method == HttpMethod.Post)
 	{
@@ -45,7 +45,7 @@ public async Task<HttpResponseMessage> HelloWorld(HttpRequestMessage req, Cancel
 }
 
 [BlobTrigger(BlobContainer)]
-public void HelloBlob(CloudBlockBlob blob)
+public void HelloBlobConsumer(CloudBlockBlob blob)
 {
 	blob.Uri.Dump("Got the blob!");
 }
