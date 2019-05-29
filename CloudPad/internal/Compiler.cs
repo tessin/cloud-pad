@@ -134,7 +134,7 @@ namespace CloudPad.Internal
                     Debug.WriteLine($"Output file exists '{destination}'", nameof(Compiler));
                     continue;
                 }
-                AssemblyBindingRewrite.Rewrite(userAssembly.Location, destination);
+                AssemblyBindingTarget.Rewrite(userAssembly.Location, destination);
             }
 
             // ====
