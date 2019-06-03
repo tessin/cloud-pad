@@ -204,7 +204,7 @@ CloudPad 2.0 was built with an explicit minimal set of dependencies to be compat
 - System.Net.Http 4.3.3
 - WindowsAzure.Storage 7.2.1
 
-You should be able to use additional NuGet packages, but there are issues with certain configurations. Unlike LINQPad, CloudPad let's you deploy multiple LINQPad scripts to the same Azure Function host. This can cause an issue with dependencies and versions. Whenever possible. Try to target the .NET Framework 4.6.1 and don't use the most recent release of a NuGet package if it doesn't fix a problem for you. 
+You should be able to use additional NuGet packages, but there are issues with certain configurations. While CloudPad let's you deploy multiple LINQPad scripts to the same Azure Function host, this can cause an issue with dependencies and versions. Whenever possible. Try to target the .NET Framework 4.6.1 and don't use the most recent release of a NuGet package if it doesn't fix a specific problem for you. Try to use packages that are compatible with the dependencies of CloudPad (the Azure Functions host).
 
 # Roadmap
 
