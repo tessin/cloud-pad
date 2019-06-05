@@ -4,7 +4,7 @@
     <Authors>John Leidegren</Authors>
     <Company>Tessin Nordic AB</Company>
     <Product>CloudPad</Product>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <!--From what I've understood, this should stay constant.-->
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
     <FileVersion>2.0.0.0</FileVersion>

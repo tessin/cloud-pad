@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 
 namespace CloudPad.Internal
 {
@@ -14,6 +15,11 @@ namespace CloudPad.Internal
         private static readonly Dictionary<string, Version> bindingRedirects = new Dictionary<string, Version> {
             { "Newtonsoft.Json", new Version(9, 0, 0, 0) },
         };
+
+        public static bool Exclude(string name)
+        {
+            return bindingRedirects.ContainsKey(name);
+        }
 
         public static void Rewrite(string source, string destination)
         {
@@ -27,7 +33,7 @@ namespace CloudPad.Internal
                 {
                     if (maxVersion < r.Version)
                     {
-                        Debug.WriteLine($"Assembly '{source}' has reference to '{r}' which was redirected to version '{maxVersion}'");
+                        Trace.WriteLine($"Assembly '{source}' has reference to '{r}' which was redirected to version '{maxVersion}'");
                         r.Version = maxVersion;
                         rewrite = true;
                     }

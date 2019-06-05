@@ -268,6 +268,11 @@ namespace CloudPad.Internal
 
             foreach (var item in cs.Set)
             {
+                if (AssemblyBindingTarget.Exclude(item.Key))
+                {
+                    // we don't want to pack files that ship as part of the Azure Functions host 
+                    continue;
+                }
                 var list = item.Value;
                 var c = list[list.Count - 1]; // use highest version
                 if (1 < list.Count)
