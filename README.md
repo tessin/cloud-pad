@@ -3,6 +3,18 @@
 
 `CloudPad` is a NuGet package that you can use to build LINQPad scripts that run as Azure Functions. You can develop and test with LINQPad -- as you would expect -- and then publish your script to Azure.
 
+- [Getting Started](#getting-started)
+- [Supported Bindings](#supported-bindings)
+  * [HttpTrigger](#httptrigger)
+  * [TimerTrigger](#timertrigger)
+  * [QueueTrigger](#queuetrigger)
+  * [BlobTrigger](#blobtrigger)
+- [Examples](#examples)
+- [File Dependencies](#file-dependencies)
+- [NuGet Dependencies](#nuget-dependencies)
+- [Known Issues](#known-issues)
+- [Roadmap](#roadmap)
+
 # Getting Started
 
 There's minimal setup but you cannot just take any LINQPad script and run it in Azure, you need to have this bootstrapping snippet in your LINQPad program.
@@ -205,6 +217,10 @@ CloudPad 2.0 was built with an explicit minimal set of dependencies to be compat
 - WindowsAzure.Storage 7.2.1
 
 You should be able to use additional NuGet packages, but there are issues with certain configurations. While CloudPad let's you deploy multiple LINQPad scripts to the same Azure Function host, this can cause an issue with dependencies and versions. Whenever possible. Try to target the .NET Framework 4.6.1 and don't use the most recent release of a NuGet package if it doesn't fix a specific problem for you. Try to use packages that are compatible with the dependencies of CloudPad (the Azure Functions host).
+
+# Known Issues
+
+`Newtonsoft.Json` specifically version `9.0.1` is the snowflake of CloudPad. If you bring in any NuGet package that has a depedency on a higher version it will break the Azure Function Host Runtime. This is beyond our control and something you need to be careful about. The only viable workaround is to find the source code to the NuGet package and downgrade or remove the incompatible depdencies.
 
 # Roadmap
 
